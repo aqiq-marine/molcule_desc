@@ -1,0 +1,73 @@
+# molcule_desc
+
+**molcule_desc** is an experimental, fragment-based language for describing molecular structures compositionally.
+
+Instead of writing every atom and bond directly, a user defines reusable structures and composes them by connecting their terminal bonds. A structure may be a small substituent, a large fragment, or a complete molecule: the language does not distinguish these as separate kinds of objects.
+
+The project prioritizes a small core language, explicit composition rules, and predictable behavior. Human-friendly names and editor autocomplete can make common attachment positions convenient without requiring the language itself to infer chemical nomenclature.
+
+> **Status:** Early design stage. The syntax and semantics are not yet stable, and this repository currently documents the intended design rather than a finalized implementation.
+
+## Design principles
+
+- **Composition over atom-by-atom notation.** Build larger structures from reusable structures.
+- **One concept for fragments and molecules.** A structure is a structure, whether or not it has unconsumed terminal bonds.
+- **Terminal bonds are attachment points.** Terminal single, double, and triple bonds are the primitive connection points.
+- **Connections are explicit.** Definitions list how source ports map to the ports exposed by the resulting structure.
+- **No inferred port mapping.** The language implementation must not guess which attachment points a composition uses or exports.
+- **Implicit hydrogen completion.** Unused terminal valences are completed with hydrogen according to the rules defined in the specification.
+- **Friendly surface syntax.** Names such as positional labels may be provided by libraries and editor tooling; internally, they resolve to explicit port identifiers.
+
+## Conceptual examples
+
+The following examples illustrate the intended model. They are **pseudocode**, not a promise of finalized syntax.
+
+A structure can be composed from other structures:
+
+```text
+ethylene(phenyl, phenyl)
+```
+
+A substituent can be attached to a named position:
+
+```text
+benzene(4:OH)
+```
+
+A larger structure can be defined by composing structures and explicitly listing the ports that remain available:
+
+```text
+structure example = compose(A, B) {
+    connect A.single[1] with B.single[2]
+
+    export:
+        single[1] = A.single[2]
+        single[2] = B.single[1]
+}
+```
+
+The exact grammar is still under design. See [SPECIFICATION.md](SPECIFICATION.md) for the current design proposal and unresolved questions.
+
+## Intended workflow
+
+1. Define or import reusable structures.
+2. Compose them by supplying structures to attachment positions.
+3. Explicitly connect terminal bonds when a composition requires a ring closure or another intramolecular connection.
+4. Explicitly declare which unused terminal bonds are exposed by the resulting structure.
+5. Resolve any remaining terminal valences to implicit hydrogens when producing a completed molecular structure.
+
+## Scope
+
+The language describes **molecular structure**, not synthetic procedures or reaction mechanisms. Operations such as protecting groups, reaction transformations, iteration, and general-purpose control flow are not part of the proposed core.
+
+## Documentation
+
+- [Language specification (proposal)](SPECIFICATION.md)
+
+## Name
+
+The repository name is `molcule_desc`. The project explores a compositional description language for molecules.
+
+## Contributing
+
+Design feedback and examples of structures that are difficult to express predictably are welcome. Since the language is experimental, proposals that simplify the core semantics are especially useful.
