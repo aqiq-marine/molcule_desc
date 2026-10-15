@@ -6,7 +6,7 @@ Instead of writing every atom and bond directly, a user defines reusable structu
 
 The project prioritizes a small core language, explicit composition rules, and predictable behavior. Human-friendly names and editor autocomplete can make common attachment positions convenient without requiring the language itself to infer chemical nomenclature.
 
-> **Status:** Early design stage. The syntax and semantics are not yet stable, and this repository currently documents the intended design rather than a finalized implementation.
+> **Status:** Early prototype. The Python API in `molcule_desc/` implements an atom/bond graph, runtime port checks, explicit port exports, and terminal-port completion. The surface language remains a design proposal.
 
 ## Design principles
 
@@ -59,6 +59,32 @@ The exact grammar is still under design. See [SPECIFICATION.md](SPECIFICATION.md
 ## Scope
 
 The language describes **molecular structure**, not synthetic procedures or reaction mechanisms. Operations such as protecting groups, reaction transformations, iteration, and general-purpose control flow are not part of the proposed core.
+
+## Python prototype
+
+The core API is implemented with runtime validation. Bond order is the only enum; ports use a bond kind and a structure-local integer identifier.
+
+```python
+from molcule_desc import (
+    acetone, ethylene, methanimine,
+    XS, XD, XT,
+)
+
+print(ethylene.finalize().formula_string())    # C2H4
+print(methanimine.finalize().formula_string())  # CH3N
+print(acetone.finalize().formula_string())      # C3H6O
+
+# Terminal templates:
+# XS = H with one single-bond port
+# XD = C with one double-bond port and two single-bond (H) ports
+# XT = C with one triple-bond port and one single-bond (H) port
+print(XD.ports)
+```
+
+Structures are composed with `bond(left, left_port, right, right_port, expose=...)`.
+The `expose` mapping is explicit: each result-local port points to a source port through `PortRef(0, ...)` (left input) or `PortRef(1, ...)` (right input). Compatible ports are consumed and a graph bond is added. Unexported, unconsumed ports are terminalized during composition; call `finalize()` to resolve the ports that remain exposed by the final structure.
+
+This is a small prototype, not a full cheminformatics toolkit. It currently supports common neutral valences and does not implement aromaticity, stereochemistry, formal-charge-aware valence rules, or SMILES conversion. The tests require `pytest`.
 
 ## Documentation
 
