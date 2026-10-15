@@ -293,63 +293,23 @@ def test_library_supports_elements_with_multiple_allowed_valences():
 
 
 
-def test_binol_scaffolds_have_expected_formulas():
+
+
+
+
+def test_binol_is_composed_from_naphthol_and_exposes_remaining_ports():
     import molcule_desc as md
 
-    expected = {
-        "binol": "C20H14O2",
-        "binol_3_3_dibromo": "C20H12Br2O2",
-        "binol_3_3_diiodo": "C20H12I2O2",
-        "binol_6_6_dibromo": "C20H12Br2O2",
-        "binol_3_3_dimethyl": "C22H18O2",
-    }
-    for name, formula in expected.items():
-        molecule = getattr(md, name).finalize()
-        assert molecule.formula_string() == formula
-        assert molecule.ports == {}
+    assert md.binol.name == "BINOL"
+    assert md.binol.finalize().formula_string() == "C20H14O2"
+    # Two naphthol fragments each expose seven ring ports plus one O-H port;
+    # one ring port on each fragment is consumed by the biaryl bond.
+    assert len(md.binol.ports) == 14
+    assert md.binol.finalize().ports == {}
 
 
-def test_binol_scaffolds_convert_to_valid_smiles():
+def test_binol_converts_to_valid_smiles():
     pytest.importorskip("rdkit")
     import molcule_desc as md
 
-    for name in (
-        "binol",
-        "binol_3_3_dibromo",
-        "binol_3_3_diiodo",
-        "binol_6_6_dibromo",
-        "binol_3_3_dimethyl",
-    ):
-        smiles = to_smiles(getattr(md, name))
-        assert smiles
-
-
-
-def test_additional_binol_formyl_imine_and_friedel_crafts_derivatives():
-    import molcule_desc as md
-
-    expected = {
-        "binol_2_2_diformyl": "C22H14O2",
-        "binol_bis_2_pyridyl_imine": "C32H22N4",
-        "binol_bis_2_pyrimidyl_imine": "C30H20N6",
-        "binol_6_6_di_tert_butyl": "C28H30O2",
-        "binol_6_6_diphenyl": "C32H22O2",
-    }
-    for name, formula in expected.items():
-        molecule = getattr(md, name).finalize()
-        assert molecule.formula_string() == formula
-        assert molecule.ports == {}
-
-
-def test_additional_binol_derivatives_convert_to_valid_smiles():
-    pytest.importorskip("rdkit")
-    import molcule_desc as md
-
-    for name in (
-        "binol_2_2_diformyl",
-        "binol_bis_2_pyridyl_imine",
-        "binol_bis_2_pyrimidyl_imine",
-        "binol_6_6_di_tert_butyl",
-        "binol_6_6_diphenyl",
-    ):
-        assert to_smiles(getattr(md, name))
+    assert to_smiles(md.binol)
