@@ -33,6 +33,7 @@ class Port:
 class Atom:
     id: int
     element: str
+    valence: int
     formal_charge: int = 0
 
 
@@ -103,47 +104,6 @@ class Structure:
 
         self.validate_valence()
 
-    @classmethod
-    def atom(
-        cls,
-        element: str,
-        *,
-        name: str | None = None,
-        formal_charge: int = 0,
-    ) -> "Structure":
-        """Create a structure containing one atom and no exposed ports.
-
-        This represents the atom itself, not an attachment template. It is
-        valid as an intermediate structure; finalize() does not infer missing
-        bonds or hydrogens when there are no ports.
-        """
-        atom = Atom(0, element, formal_charge)
-        return cls(name or element, [atom])
-
-    @classmethod
-    def ported_atom(
-        cls,
-        element: str,
-        ports: Iterable[Port],
-        *,
-        name: str | None = None,
-        formal_charge: int = 0,
-    ) -> "Structure":
-        """Create a one-atom attachment template with explicitly shaped ports.
-
-        Each port reserves valence according to its bond order. Unconnected
-        ports are consumed by bond() or capped by finalize().
-        """
-        port_list = list(ports)
-        if len(port_list) != len(set(port_list)):
-            raise ValueError("Duplicate port identifiers")
-        atom = Atom(0, element, formal_charge)
-        return cls(
-            name or f"{element} template",
-            [atom],
-            ports={port: atom.id for port in port_list},
-        )
-
     def validate_valence(self) -> None:
         """Check known elements against bond orders plus exposed-port orders."""
         valence = {atom_id: 0 for atom_id in self.atoms}
@@ -156,7 +116,7 @@ class Structure:
 
         for atom_id, used in valence.items():
             atom = self.atoms[atom_id]
-            limit = _VALENCE_LIMITS.get(atom.element)
+            limit = atom.valence
             if limit is not None and used > limit:
                 raise ValueError(
                     f"Valence exceeded for {atom.element} atom {atom_id}: "
@@ -192,7 +152,7 @@ class Structure:
             nonlocal next_id
             atom_id = next_id
             next_id += 1
-            atoms[atom_id] = Atom(atom_id, element)
+            atoms[atom_id] = Atom(atom_id, element, _VALENCE_LIMITS[element])
             return atom_id
 
         for port, anchor in self.ports.items():
@@ -224,6 +184,35 @@ class Structure:
             f"Structure(name={self.name!r}, atoms={len(self.atoms)}, "
             f"bonds={len(self.bonds)}, ports={list(self.ports)})"
         )
+
+
+def atom(
+    element: str,
+    valence: int,
+    *,
+    formal_charge: int = 0,
+) -> Atom:
+    """Create an atom specification with an explicitly declared valence."""
+    if valence < 0:
+        raise ValueError("Valence must be non-negative")
+    return Atom(0, element, valence, formal_charge)
+
+
+def ported_atom(
+    atom: Atom,
+    ports: Iterable[Port],
+    *,
+    name: str | None = None,
+) -> Structure:
+    """Create a one-atom Structure from an Atom and explicit attachment ports."""
+    port_list = list(ports)
+    if len(port_list) != len(set(port_list)):
+        raise ValueError("Duplicate port identifiers")
+    return Structure(
+        name or f"{atom.element} template",
+        [atom],
+        ports={port: atom.id for port in port_list},
+    )
 
 
 def single(index: int) -> Port:
@@ -276,7 +265,7 @@ def bond(
         for atom_id, atom in structure.atoms.items():
             new_id = atom_id + offset
             maps[side][atom_id] = new_id
-            atoms[new_id] = Atom(new_id, atom.element, atom.formal_charge)
+            atoms[new_id] = Atom(new_id, atom.element, atom.valence, atom.formal_charge)
         for edge in structure.bonds:
             bonds.append(
                 Bond(
@@ -334,19 +323,19 @@ def bond(
                 return
             terminal_id = next_id
             next_id += 1
-            atoms[terminal_id] = Atom(terminal_id, "H")
+            atoms[terminal_id] = Atom(terminal_id, "H", 1)
             bonds.append(Bond(anchor, terminal_id, BondType.SINGLE))
             return
 
         terminal_id = next_id
         next_id += 1
-        atoms[terminal_id] = Atom(terminal_id, "C")
+        atoms[terminal_id] = Atom(terminal_id, "C", _VALENCE_LIMITS["C"])
         bonds.append(Bond(anchor, terminal_id, port.bond))
         hydrogen_count = 2 if port.bond is BondType.DOUBLE else 1
         for _ in range(hydrogen_count):
             hydrogen_id = next_id
             next_id += 1
-            atoms[hydrogen_id] = Atom(hydrogen_id, "H")
+            atoms[hydrogen_id] = Atom(hydrogen_id, "H", 1)
             bonds.append(Bond(terminal_id, hydrogen_id, BondType.SINGLE))
 
     source_count = 1 if same_structure else 2
