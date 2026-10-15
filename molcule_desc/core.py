@@ -377,73 +377,115 @@ def substitute(
     host: Structure,
     substitutions: Mapping[Port, tuple[Structure, Port]],
     *,
+    expose: Mapping[Port, tuple[int, Port]] | None = None,
     name: str | None = None,
 ) -> Structure:
     """Replace multiple exposed host ports with guest structures.
 
     substitutions maps each original host port to a (guest, guest_port) pair.
-    Each guest is connected through its selected port. Unused ports on the
-    host and guests remain exposed across intermediate substitutions.
+    expose optionally maps each output port to (source, port), where source 0
+    is the original host and sources 1..N are guests in substitutions order.
 
-    Host port keys always refer to the original host structure.
+    If expose is omitted, all unused host and guest ports are preserved.
+    If supplied, only listed ports are exposed; other unused ports are capped.
     """
-    if not substitutions:
-        return Structure(name or host.name, host.atoms.values(), host.bonds, host.ports)
-
-    missing = set(substitutions) - set(host.ports)
+    entries = list(substitutions.items())
+    missing = {host_port for host_port, _ in entries} - set(host.ports)
     if missing:
         raise ValueError(f"Host has no exposed ports: {sorted(missing, key=repr)}")
 
-    current = host
-    host_port_map: dict[Port, Port] = {port: port for port in host.ports}
-    guest_port_map: list[Port] = []
-
-    for step, (original_port, (guest, guest_port)) in enumerate(
-        substitutions.items(), start=1
-    ):
-        if original_port not in host_port_map:
-            raise ValueError(f"Host port {original_port} has already been substituted")
-        current_port = host_port_map[original_port]
+    structures = [host] + [guest for _, (guest, _) in entries]
+    consumed: list[set[Port]] = [set() for _ in structures]
+    for host_port, (guest, guest_port) in entries:
         if guest_port not in guest.ports:
             raise ValueError(f"{guest.name} has no exposed port {guest_port}")
+        if host_port.bond is not guest_port.bond:
+            raise ValueError("Bond types do not match")
+        consumed[0].add(host_port)
+    for index, (_, (_, guest_port)) in enumerate(entries, start=1):
+        consumed[index].add(guest_port)
 
+    atoms: dict[int, Atom] = {}
+    bonds: list[Bond] = []
+    atom_maps: list[dict[int, int]] = []
+    next_atom_id = 0
+    for structure in structures:
+        mapping: dict[int, int] = {}
+        for atom_id, atom_spec in structure.atoms.items():
+            mapping[atom_id] = next_atom_id
+            atoms[next_atom_id] = Atom(
+                next_atom_id, atom_spec.element, atom_spec.valence,
+                atom_spec.formal_charge,
+            )
+            next_atom_id += 1
+        atom_maps.append(mapping)
+        for edge in structure.bonds:
+            bonds.append(Bond(mapping[edge.start], mapping[edge.end], edge.order))
+
+    for index, (host_port, (guest, guest_port)) in enumerate(entries, start=1):
+        host_anchor = atom_maps[0][host.ports[host_port]]
+        guest_anchor = atom_maps[index][guest.ports[guest_port]]
+        if host_anchor == guest_anchor:
+            raise ValueError("Cannot connect ports anchored on the same atom")
+        bonds.append(Bond(host_anchor, guest_anchor, host_port.bond))
+
+    available: dict[tuple[int, Port], int] = {}
+    for source, structure in enumerate(structures):
+        for port, atom_id in structure.ports.items():
+            if port not in consumed[source]:
+                available[(source, port)] = atom_maps[source][atom_id]
+
+    if expose is None:
+        output_ports: dict[Port, int] = {}
         next_index: dict[BondType, int] = {}
-        expose: dict[Port, PortRef] = {}
-        new_host_port_map: dict[Port, Port] = {}
-        new_guest_port_map: list[Port] = []
+        for (source, port), anchor in available.items():
+            index = next_index.get(port.bond, 1)
+            next_index[port.bond] = index + 1
+            output_ports[Port(port.bond, index)] = anchor
+        exported_keys = set(available)
+    else:
+        output_ports = {}
+        exported_keys: set[tuple[int, Port]] = set()
+        for output_port, (source, source_port) in expose.items():
+            if source < 0 or source >= len(structures):
+                raise ValueError(
+                    f"Invalid expose source {source}; expected 0..{len(structures) - 1}"
+                )
+            key = (source, source_port)
+            if key not in available:
+                if source_port in consumed[source]:
+                    raise ValueError(f"Cannot expose consumed port {source_port}")
+                raise ValueError(f"Input has no exposed port {source_port}")
+            if output_port.bond is not source_port.bond:
+                raise ValueError("Output port bond type does not match source port")
+            if key in exported_keys:
+                raise ValueError(f"Input port {source_port} is published more than once")
+            exported_keys.add(key)
+            output_ports[output_port] = available[key]
 
-        def publish(source: int, old_port: Port) -> Port:
-            index = next_index.get(old_port.bond, 1)
-            next_index[old_port.bond] = index + 1
-            new_port = Port(old_port.bond, index)
-            expose[new_port] = PortRef(source, old_port)
-            return new_port
-
-        for original, old_port in host_port_map.items():
-            if original == original_port:
+    next_atom_id = max(atoms, default=-1) + 1
+    for key, anchor in available.items():
+        if key in exported_keys:
+            continue
+        port = key[1]
+        if port.bond is BondType.SINGLE:
+            if atoms[anchor].element == "H":
                 continue
-            new_host_port_map[original] = publish(0, old_port)
+            atoms[next_atom_id] = Atom(next_atom_id, "H", 1)
+            bonds.append(Bond(anchor, next_atom_id, BondType.SINGLE))
+            next_atom_id += 1
+        else:
+            terminal_id = next_atom_id
+            atoms[terminal_id] = Atom(terminal_id, "C", _VALENCE_LIMITS["C"])
+            bonds.append(Bond(anchor, terminal_id, port.bond))
+            next_atom_id += 1
+            hydrogen_count = 2 if port.bond is BondType.DOUBLE else 1
+            for _ in range(hydrogen_count):
+                atoms[next_atom_id] = Atom(next_atom_id, "H", 1)
+                bonds.append(Bond(terminal_id, next_atom_id, BondType.SINGLE))
+                next_atom_id += 1
 
-        for old_port in guest_port_map:
-            new_guest_port_map.append(publish(0, old_port))
-
-        for old_port in guest.ports:
-            if old_port != guest_port:
-                new_guest_port_map.append(publish(1, old_port))
-
-        current = bond(
-            current,
-            current_port,
-            guest,
-            guest_port,
-            expose=expose,
-            name=name if step == len(substitutions) else f"{host.name} substitution {step}",
-        )
-        host_port_map = new_host_port_map
-        guest_port_map = new_guest_port_map
-
-    current.name = name or f"{host.name} substituted"
-    return current
+    return Structure(name or f"{host.name} substituted", atoms.values(), bonds, output_ports)
 
 
 def ring(
