@@ -11,6 +11,7 @@ from .core import (
     ported_atom,
     bond,
     ring,
+    substitute,
     double,
     single,
     triple,
@@ -30,7 +31,7 @@ from .library import (
 
 __all__ = [
     "Atom", "Bond", "BondType", "Port", "PortRef", "Structure",
-    "atom", "ported_atom", "bond", "ring", "single", "double", "triple",
+    "atom", "ported_atom", "bond", "ring", "substitute", "single", "double", "triple",
     "to_rdkit_mol", "to_smiles",
     "hydrogen_single", "carbon_double_two_single", "carbon_triple_single",
     "oxygen_double", "ethylene", "methanimine",
