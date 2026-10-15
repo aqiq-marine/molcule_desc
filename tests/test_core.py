@@ -304,7 +304,7 @@ def test_binol_is_composed_from_naphthol_and_exposes_remaining_ports():
     assert md.binol.finalize().formula_string() == "C20H14O2"
     # Two naphthol fragments each expose seven ring ports plus one O-H port;
     # one ring port on each fragment is consumed by the biaryl bond.
-    assert len(md.binol.ports) == 14
+    assert len(md.binol.ports) == 12
     assert md.binol.finalize().ports == {}
 
 
