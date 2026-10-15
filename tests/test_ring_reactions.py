@@ -18,7 +18,7 @@ def test_lactone_examples_have_expected_formulas_and_ring_sizes(name, formula, r
     molecule = getattr(examples, name).finalize()
     assert molecule.formula_string() == formula
     assert molecule.ports == {}
-    assert len(molecule.atoms) == ring_size + 1  # includes carbonyl oxygen
+    assert sum(atom.element != "H" for atom in molecule.atoms.values()) == ring_size + 1  # includes carbonyl oxygen
 
 
 def test_iodoetherification_example_has_expected_formula():
