@@ -275,6 +275,7 @@ thiophene = _graph_structure(
         [BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE,
          BondType.DOUBLE, BondType.SINGLE],
     ),
+    valences=[2, 4, 4, 4, 4],
 )
 imidazole = _graph_structure(
     "imidazole", ["N", "C", "N", "C", "C"],
@@ -299,16 +300,17 @@ bromo = _graph_structure("bromo", ["Br"], [])
 iodo = _graph_structure("iodo", ["I"], [])
 
 # Sulfur- and phosphorus-containing groups.
-thiol = _graph_structure("thiol", ["S"], [])
+thiol = _graph_structure("thiol", ["S"], [], valences=[2])
 thioether = _graph_structure(
     "thioether", ["C", "S", "C"],
     [(0, 1, BondType.SINGLE), (1, 2, BondType.SINGLE)],
+    valences=[4, 2, 4],
 )
 sulfone = _graph_structure(
     "sulfone", ["S", "O", "O"],
     [(0, 1, BondType.DOUBLE), (0, 2, BondType.DOUBLE)],
 )
-phosphine = _graph_structure("phosphine", ["P"], [])
+phosphine = _graph_structure("phosphine", ["P"], [], valences=[3])
 phosphine_oxide = _graph_structure(
     "phosphine_oxide", ["P", "O"], [(0, 1, BondType.DOUBLE)]
 )
