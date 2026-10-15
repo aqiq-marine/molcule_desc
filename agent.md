@@ -4,6 +4,7 @@
 
 - Prefer a **fragment-based approach** when writing molecular structures and examples. Compose structures from reusable fragments in `molcule_desc.library` using operations such as `bond()`, `ring()`, and `substitute()`, rather than manually constructing atom and bond graphs or defining one-off atoms when an existing library fragment is suitable.
 - Build chains with `bond()` and close cycles with `ring()` where practical. Explicitly expose only the ports that need to remain available for subsequent composition; unexposed ports are capped by the composition operation's default behavior.
+- Before adding a fragment or implementing a molecular example, inspect `molcule_desc.library` and related library modules to check whether an equivalent or composable fragment already exists. Reuse existing definitions whenever possible; avoid duplicate or near-duplicate definitions.
 - Reuse library fragments for common atoms and groups (for example, `methylene`, `hydroxyl`, and `carbonyl`) instead of defining duplicate local fragments.
 
 ## Library fragment ports
