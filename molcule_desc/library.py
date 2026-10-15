@@ -104,9 +104,153 @@ carbonyl = _carbonyl()
 formaldehyde = carbonyl
 acetone = _acetone()
 
+def _tert_butyl() -> Structure:
+    """Build tert-butyl by attaching three methane fragments to one methane.
+
+    One port on the central carbon is retained as the substituent attachment;
+    the remaining ports on the three terminal carbons become their hydrogens
+    when the completed molecule is requested.
+    """
+    central = methane
+    next_port = 1
+    for i in range(3):
+        methyl = methane
+        # The central carbon's first three ports are used to attach methyls.
+        central_port = single(next_port)
+        methyl_port = single(1)
+        remaining: dict[Port, PortRef] = {}
+        out_index = 1
+        for port in central.ports:
+            if port != central_port:
+                remaining[single(out_index)] = PortRef(0, port)
+                out_index += 1
+        for port in methyl.ports:
+            if port != methyl_port:
+                remaining[single(out_index)] = PortRef(1, port)
+                out_index += 1
+        central = bond(
+            central, central_port, methyl, methyl_port,
+            expose=remaining, name=f"tert-butyl assembly {i + 1}",
+        )
+        next_port = 1
+    # The first remaining port is the central carbon's fourth valence.
+    # All other ports are the three hydrogens on each methyl carbon.
+    # Keep only the central carbon port exposed; methyl ports are internal
+    # terminal valences and will be hydrogen-completed on finalization.
+    central_atom_id = next(
+        atom_id for atom_id, atom in central.atoms.items()
+        if atom.element == "C"
+        and sum(1 for edge in central.bonds if atom_id in (edge.start, edge.end)) == 3
+    )
+    attachment_port = next(
+        port for port, atom_id in central.ports.items() if atom_id == central_atom_id
+    )
+    atoms = dict(central.atoms)
+    bonds = list(central.bonds)
+    next_atom_id = max(atoms) + 1
+    for port, anchor in central.ports.items():
+        if anchor == central_atom_id:
+            continue
+        hydrogen_id = next_atom_id
+        next_atom_id += 1
+        atoms[hydrogen_id] = Atom(hydrogen_id, "H", 1)
+        bonds.append(Bond(anchor, hydrogen_id, BondType.SINGLE))
+    return Structure(
+        "tert-butyl",
+        atoms.values(),
+        bonds,
+        {single(1): central_atom_id},
+    )
+
+
+
+
+def _benzene() -> Structure:
+    # Kekule representation with one exposed single-bond port for each C-H bond.
+    # Ports 1 and 2 close the ring; ports 3-8 represent the six hydrogens.
+    ports = {single(1): 0, single(2): 5}
+    ports.update({single(i + 3): i for i in range(6)})
+    chain = Structure(
+        "benzene chain",
+        [Atom(i, "C", 4) for i in range(6)],
+        [
+            Bond(0, 1, BondType.DOUBLE),
+            Bond(1, 2, BondType.SINGLE),
+            Bond(2, 3, BondType.DOUBLE),
+            Bond(3, 4, BondType.SINGLE),
+            Bond(4, 5, BondType.DOUBLE),
+        ],
+        ports=ports,
+    )
+    return ring(
+        chain,
+        single(1),
+        single(2),
+        expose={single(i + 1): single(i + 3) for i in range(6)},
+        name="benzene",
+    )
+
+
+benzene = _benzene()
+
+
+# Generic graph builder for reusable library structures. Every unused valence is
+# represented by a single-bond port, so it can either be connected to a fragment
+# or completed with hydrogen when the structure is finalized.
+_ELEMENT_VALENCES = {
+    "H": 1, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
+    "Cl": 1, "Br": 1, "I": 1, "P": 5, "S": 6,
+}
+
+
+def _graph_structure(
+    name: str,
+    elements: list[str],
+    edges: list[tuple[int, int, BondType]],
+    *,
+    valences: list[int] | None = None,
+    formal_charges: list[int] | None = None,
+) -> Structure:
+    """Build a graph and expose every remaining valence as a single port."""
+    atom_valences = valences or [_ELEMENT_VALENCES[element] for element in elements]
+    charges = formal_charges or [0] * len(elements)
+    used = [0] * len(elements)
+    bonds = [Bond(start, end, order) for start, end, order in edges]
+    for edge in bonds:
+        used[edge.start] += edge.order.value
+        used[edge.end] += edge.order.value
+    atoms = [
+        Atom(i, element, atom_valences[i], charges[i])
+        for i, element in enumerate(elements)
+    ]
+    ports: dict[Port, int] = {}
+    port_index = 1
+    for atom_id, valence in enumerate(atom_valences):
+        remaining = valence - used[atom_id]
+        if remaining < 0:
+            raise ValueError(
+                f"Invalid library structure {name!r}: atom {atom_id} "
+                f"uses valence {used[atom_id]} > {valence}"
+            )
+        for _ in range(remaining):
+            ports[single(port_index)] = atom_id
+            port_index += 1
+    return Structure(name, atoms, bonds, ports)
+
+
+def _cycle_edges(
+    atom_ids: list[int],
+    orders: list[BondType],
+) -> list[tuple[int, int, BondType]]:
+    return [
+        (atom_ids[i], atom_ids[(i + 1) % len(atom_ids)], orders[i])
+        for i in range(len(atom_ids))
+    ]
+
 
 # Saturated and unsaturated hydrocarbon skeletons.
 methane = _graph_structure("methane", ["C"], [])
+tert_butyl = _tert_butyl()
 ethane = _graph_structure("ethane", ["C", "C"], [(0, 1, BondType.SINGLE)])
 propane = _graph_structure(
     "propane", ["C", "C", "C"],
