@@ -148,52 +148,72 @@ def _binol_diformyl() -> Structure:
 binol_2_2_diformyl = _binol_diformyl()
 
 
-def _binol_bis_imine(amine: str) -> Structure:
-    """Condense both formyl groups with an aminopyridine or aminopyrimidine.
+def _attach_preserving_guest_port(
+    host: Structure,
+    host_anchor: int,
+    guest: Structure,
+    guest_anchor: int,
+    keep_guest_anchor: int,
+    *,
+    name: str,
+) -> tuple[Structure, int]:
+    """Attach a fragment while keeping one guest port available for a later step."""
+    host_port = _port_at_atom(host, host_anchor)
+    guest_port = _port_at_atom(guest, guest_anchor)
+    keep_port = _port_at_atom(guest, keep_guest_anchor)
+    expose: dict[Port, tuple[int, Port]] = {}
+    output_index = 1
+    for port in host.ports:
+        if port != host_port:
+            expose[single(output_index)] = (0, port)
+            output_index += 1
+    expose[single(output_index)] = (1, keep_port)
+    new_guest_anchor = len(host.atoms) + keep_guest_anchor
+    result = substitute(
+        host,
+        {host_port: (guest, guest_port)},
+        expose=expose,
+        name=name,
+    )
+    return result, new_guest_anchor
 
-    The imine N is connected to the exocyclic amino position (C2) of each
-    heteroaromatic ring. Supported amines: 2-aminopyridine and
-    2-aminopyrimidine.
-    """
+
+def _pyrimidine_fragment() -> Structure:
+    """Reusable pyrimidine ring fragment with an exposed port at C2."""
+    return _graph_structure(
+        "pyrimidine",
+        ["N", "C", "N", "C", "C", "C"],
+        [
+            (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+            (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+            (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        ],
+    )
+
+
+def _binol_bis_imine(amine: str) -> Structure:
+    """Compose bis-imines from binaphthyl, imine, and heteroaromatic fragments."""
     if amine not in {"2-aminopyridine", "2-aminopyrimidine"}:
         raise ValueError(f"Unsupported imine partner: {amine}")
-    elements = ["C"] * 22 + ["N", "N"]
-    edges = _binol_ring_edges()
-    # Formyl carbon atoms 20 and 21 form C=N imines; the carbonyl O is absent.
-    edges.extend([
-        (1, 20, BondType.SINGLE), (20, 22, BondType.DOUBLE),
-        (11, 21, BondType.SINGLE), (21, 23, BondType.DOUBLE),
-    ])
-    for side, (formyl_c, imine_n) in enumerate(((20, 22), (21, 23))):
-        start = len(elements)
-        ring_elements = ["N", "C", "C", "C", "C", "C"]
-        if amine == "2-aminopyrimidine":
-            ring_elements = ["N", "C", "N", "C", "C", "C"]
-        elements.extend(ring_elements)
-        # The imine N is bonded to C2 of the heteroaromatic ring.
-        if amine == "2-aminopyridine":
-            edges.extend([
-                (imine_n, start + 1, BondType.SINGLE),
-                (start, start + 1, BondType.SINGLE),
-                (start + 1, start + 2, BondType.DOUBLE),
-                (start + 2, start + 3, BondType.SINGLE),
-                (start + 3, start + 4, BondType.DOUBLE),
-                (start + 4, start + 5, BondType.SINGLE),
-                (start + 5, start, BondType.DOUBLE),
-            ])
-        else:
-            # 2-aminopyrimidine: attach at C2 and include N at ring position 3.
-            edges.extend([
-                (imine_n, start + 1, BondType.SINGLE),
-                (start, start + 1, BondType.DOUBLE),
-                (start + 1, start + 2, BondType.SINGLE),
-                (start + 2, start + 3, BondType.DOUBLE),
-                (start + 3, start + 4, BondType.SINGLE),
-                (start + 4, start + 5, BondType.DOUBLE),
-                (start + 5, start, BondType.SINGLE),
-            ])
-    return _graph_structure(f"BINOL bis({amine} imine)", elements, edges)
-
+    heteroaromatic = pyridine if amine == "2-aminopyridine" else _pyrimidine_fragment()
+    result = _compose_binaphthyl_base()
+    for position, label in ((2, "left"), (13, "right")):
+        result, imine_n = _attach_preserving_guest_port(
+            result,
+            position,
+            imine,
+            guest_anchor=0,
+            keep_guest_anchor=1,
+            name=f"BINOL bis({amine} imine) {label} arm",
+        )
+        result = _replace_with_fragment(
+            result,
+            imine_n,
+            heteroaromatic,
+            name=f"BINOL bis({amine} imine)",
+        )
+    result.name = f"BINOL bis({amine} imine)"
+    return result
 
 binol_bis_2_pyridyl_imine = _binol_bis_imine("2-aminopyridine")
 binol_bis_2_pyrimidyl_imine = _binol_bis_imine("2-aminopyrimidine")
