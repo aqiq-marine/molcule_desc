@@ -11,6 +11,7 @@ from molcule_desc import (
     carbon_triple_single,
     oxygen_double,
     acetone,
+    benzene,
     atom,
     ported_atom,
     bond,
@@ -168,3 +169,10 @@ def test_rdkit_smiles_conversion_requires_finalized_structure_when_requested():
     template = ported_atom(atom("C", 4), [single(1)])
     with pytest.raises(ValueError, match="exposed ports"):
         to_smiles(template, finalize=False)
+
+
+def test_benzene_smiles_is_aromatic_benzene():
+    pytest.importorskip("rdkit")
+    assert benzene.formula == {"C": 6}
+    assert len(benzene.bonds) == 6
+    assert to_smiles(benzene) == "c1ccccc1"
