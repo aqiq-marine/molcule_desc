@@ -18,7 +18,7 @@ from .core import (
 from .smiles import to_rdkit_mol, to_smiles
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
-    acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
+    acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine, tert_butyl,
     methane, ethane, propane, acetylene, cyclohexane, phenyl, phenylene,
     hydroxyl, ether, carboxyl, ester, amino, amine, amide, nitrile, imine,
     pyridine, pyrrole, thiophene, imidazole, naphthalene,
@@ -33,7 +33,7 @@ __all__ = [
     "to_rdkit_mol", "to_smiles",
     "hydrogen_single", "carbon_double_two_single", "carbon_triple_single",
     "oxygen_double", "ethylene", "methanimine",
-    "carbonyl", "formaldehyde", "acetone", "benzene",
+    "carbonyl", "formaldehyde", "acetone", "benzene", "tert_butyl",
     "methane", "ethane", "propane", "acetylene", "cyclohexane",
     "phenyl", "phenylene", "hydroxyl", "ether", "carboxyl", "ester",
     "amino", "amine", "amide", "nitrile", "imine", "pyridine", "pyrrole",
