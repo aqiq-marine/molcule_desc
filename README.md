@@ -74,12 +74,23 @@ print(ethylene.finalize().formula_string())    # C2H4
 print(methanimine.finalize().formula_string())  # CH3N
 print(acetone.finalize().formula_string())      # C3H6O
 
+# Structure.atom creates a bare atom; Structure.ported_atom creates an
+# atom template whose valence is represented by explicit attachment ports.
+from molcule_desc import Structure, single, double
+
+bare_carbon = Structure.atom("C")
+carbon_template = Structure.ported_atom(
+    "C", [double(1), single(1), single(2)], name="XD"
+)
+
 # Terminal templates:
 # XS = H with one single-bond port
 # XD = C with one double-bond port and two single-bond (H) ports
 # XT = C with one triple-bond port and one single-bond (H) port
 print(XD.ports)
 ```
+
+`Structure.atom(element)` creates a bare atom without attachment ports. `Structure.ported_atom(element, ports)` creates a one-atom structure whose available valences are represented as explicit single, double, or triple bond ports. Use the latter for reusable connection templates such as `XD`; use the former when you need an atom without declaring attachment sites yet.
 
 Structures are composed with `bond(left, left_port, right, right_port, expose=...)`.
 The `expose` mapping is explicit: each result-local port points to a source port through `PortRef(0, ...)` (left input) or `PortRef(1, ...)` (right input). Compatible ports are consumed and a graph bond is added. Unexported, unconsumed ports are terminalized during composition; call `finalize()` to resolve the ports that remain exposed by the final structure. To connect two ports in one structure, pass the same structure twice and set `intramolecular=True`.
