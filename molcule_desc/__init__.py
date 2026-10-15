@@ -21,7 +21,7 @@ from .library_advanced import biphenyl, tert_butyl
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
     acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
-    methane, ethane, propane, acetylene, cyclohexane, phenyl,
+    methane, ethane, propane, acetylene, cyclopropane, cyclobutane,\n    cyclopentane, cyclohexane, cycloheptane, cyclooctane, cyclononane, cyclodecane, phenyl,
     hydroxyl, ether, carboxyl, ester, amino, amine, amide, nitrile, imine,
     pyridine, pyrrole, thiophene, imidazole, naphthalene,
     fluoro, chloro, bromo, iodo, thiol, thioether, sulfone, phosphine,
@@ -36,7 +36,7 @@ __all__ = [
     "hydrogen_single", "carbon_double_two_single", "carbon_triple_single",
     "oxygen_double", "ethylene", "methanimine",
     "carbonyl", "formaldehyde", "acetone", "benzene", "tert_butyl",
-    "methane", "ethane", "propane", "acetylene", "cyclohexane",
+    "methane", "ethane", "propane", "acetylene", "cyclopropane", "cyclobutane",\n    "cyclopentane", "cyclohexane", "cycloheptane", "cyclooctane", "cyclononane", "cyclodecane",
     "phenyl", "hydroxyl", "ether", "carboxyl", "ester",
     "amino", "amine", "amide", "nitrile", "imine", "pyridine", "pyrrole",
     "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
