@@ -302,9 +302,9 @@ def test_binol_is_composed_from_naphthol_and_exposes_remaining_ports():
 
     assert md.binol.name == "BINOL"
     assert md.binol.finalize().formula_string() == "C20H14O2"
-    # Each naphthol fragment exposes six carbon-substitution ports and one O-H
+    # Each naphthol fragment exposes seven carbon-substitution ports and one O-H
     # port; the biaryl connection consumes one carbon port on each fragment.
-    assert len(md.binol.ports) == 12
+    assert len(md.binol.ports) == 14
     assert md.binol.finalize().ports == {}
 
 
