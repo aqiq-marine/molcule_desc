@@ -47,7 +47,8 @@ def attach(
     for index, (label, source, old_port) in enumerate(remaining, start=1):
         new_port = Port(old_port.bond, index)
         exports[new_port] = PortRef(source, old_port)
-        new_names[label] = new_port
+        output_label = label if label not in new_names else f"{name}.{label}"
+        new_names[output_label] = new_port
 
     combined = bond(
         base.structure,
