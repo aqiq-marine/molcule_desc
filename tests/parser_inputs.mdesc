@@ -1,20 +1,26 @@
 # molcule_desc parser input fixtures
 #
 # Purpose:
-#   Parser-level input examples only. These examples exercise the proposed
-#   surface syntax, not semantic or chemical validity.
+#   Parser-level input examples for the current proposed surface syntax.
+#   These are syntax fixtures, not semantic or chemical-validity tests.
 #
 # Syntax decisions represented here:
-#   - Position labels are numeric only; para/ortho/meta are not valid labels.
+#   - Position labels are numeric only.
 #   - A host fragment exposes a function as fragment.f.
-#   - Calls have exactly three argument groups, in this order:
-#       host.f {single-bond ports} {double-bond ports} {triple-bond ports}
-#   - A guest port is written as guest.port.s N, guest.port.d N, or guest.port.t N.
-#   - ring(structure, position_a, position_b) connects two ports within one
-#     structure. This is a proposed parser form for intramolecular closure.
+#   - Calls have four groups:
+#       host.f {single-bond connections} {double-bond connections}
+#              {triple-bond connections} {exported ports}
+#   - The first three groups determine the bond order, so guest references use
+#     "guest.port N" rather than "guest.port.s N".
+#   - The fourth group declares which ports the resulting structure exposes.
+#   - Port paths use dot-separated segments. "0" denotes the host:
+#       0.d.1    = host double-bond port 1
+#       s.1.s.1  = guest single-bond port 1 attached at host single-bond port 1
+#   - ring(structure, position_a, position_b) is the proposed syntax for
+#     connecting two ports within one structure.
 #
 # Names such as ethane, benzene, OH, and fragment are unresolved identifiers
-# from the parser's point of view. This file is input for parser tests only.
+# from the parser's point of view.
 
 # 1. Simple name references and definitions
 alkane = ethane
@@ -23,112 +29,197 @@ hydroxyl = OH
 # 2. Host fragment function reference
 benzene_function = benzene.f
 
-# 3. Single-bond port group
-phenol = benzene.f {4: OH.port.s 1} {} {}
+# 3. Single-bond attachment and explicit export of host ports 1 and 2
+phenol = benzene.f {
+    4: OH.port 1
+} {} {} {
+    0.s.1,
+    0.s.2
+}
 
-# 4. Multiple numeric positions in the single-bond group
+# 4. Multiple numeric positions and exported host ports
 dihydroxybiphenyl = biphenyl.f {
-    4: OH.port.s 1
-    9: OH.port.s 1
-} {} {}
+    4: OH.port 1
+    9: OH.port 1
+} {} {} {
+    0.s.1,
+    0.s.2
+}
 
 # 5. Multiple substitutions on a structure with several available positions
 substituted_ethane = ethane.f {
-    1: nitro.port.s 1
-    3: OH.port.s 1
-    6: NH2.port.s 1
-} {} {}
+    1: nitro.port 1
+    3: OH.port 1
+    6: NH2.port 1
+} {} {} {
+    0.s.2,
+    0.s.4
+}
 
 # 6. Nested structure applications
 nested = benzene.f {
-    4: benzene.port.s 1
-} {} {}
+    4: benzene.port 1
+} {} {} {
+    0.s.1,
+    s.1.s.2
+}
 
-# 7. Single-bond guest port
+# 7. Single-bond guest port; expose the remaining host port and a guest port
 single_connection = host.f {
-    1: guest.port.s 2
-} {} {}
+    1: guest.port 2
+} {} {} {
+    0.s.1,
+    s.1.s.1
+}
 
 # 8. Double-bond guest port: second argument group
 double_connection = host.f {} {
-    1: guest.port.d 2
-} {}
+    1: guest.port 2
+} {} {
+    0.d.1,
+    d.1.d.2
+}
 
 # 9. Triple-bond guest port: third argument group
 triple_connection = host.f {} {} {
-    1: guest.port.t 2
+    1: guest.port 2
+} {
+    0.t.1,
+    t.1.t.2
 }
 
-# 10. Several guest fragments in one group
+# 10. Several guest fragments in the single-bond group
 linked = host.f {
-    1: left_fragment.port.s 1
-    2: right_fragment.port.s 2
-} {} {}
+    1: left_fragment.port 1
+    2: right_fragment.port 2
+} {} {} {
+    0.s.3,
+    s.1.s.2,
+    s.2.s.1
+}
 
-# 11. Each of the three argument groups is present, even when empty
+# 11. Empty attachment groups are allowed; the fourth group is still required
 single_only = host.f {
-    1: guest.port.s 1
-} {} {}
+    1: guest.port 1
+} {} {} {
+    0.s.2,
+    s.1.s.2
+}
 
 double_only = host.f {} {
-    1: guest.port.d 1
-} {}
+    1: guest.port 1
+} {} {
+    0.s.1,
+    0.d.2,
+    d.1.s.2
+}
 
 triple_only = host.f {} {} {
-    1: guest.port.t 1
+    1: guest.port 1
+} {
+    0.s.1,
+    0.t.2,
+    t.1.s.2
 }
 
 # 12. A user-defined structure can be referenced as a guest
 first = benzene.f {
-    4: OH.port.s 1
-} {} {}
+    4: OH.port 1
+} {} {} {
+    0.s.1,
+    s.1.s.2
+}
 
 second = biphenyl.f {
-    4: first.port.s 1
-} {} {}
+    4: first.port 1
+} {} {} {
+    0.s.1,
+    s.1.s.2
+}
 
-# 13. Guest connections of different bond orders use separate argument groups
+# 13. Guest connections of different bond orders use separate groups
 mixed = host.f {
-    1: single_guest.port.s 1
+    1: single_guest.port 1
 } {
-    2: double_guest.port.d 1
+    2: double_guest.port 1
 } {
-    3: triple_guest.port.t 1
+    3: triple_guest.port 1
+} {
+    0.s.4,
+    0.d.4,
+    0.t.4,
+    s.1.s.2,
+    d.2.s.2,
+    t.3.s.2
 }
 
 # 14. Numeric labels remain numeric, without special locant semantics
 numbered = host.f {
-    4: guest_a.port.s 1
-    9: guest_b.port.s 1
-} {} {}
+    4: guest_a.port 1
+    9: guest_b.port 1
+} {} {} {
+    0.s.1,
+    s.4.s.2,
+    s.9.s.2
+}
 
-# 15. Ring closure: connect two positions within one structure
+# 15. Ring closure: connect two ports within one structure
 cyclohexane = ring(hexane, 1, 6)
 
 # 16. Ring closure may be nested inside a definition
 cyclic_fragment = ring(open_chain, 1, 2)
 decorated_ring = benzene.f {
-    4: cyclic_fragment.port.s 1
-} {} {}
+    4: cyclic_fragment.port 1
+} {} {} {
+    0.s.1,
+    s.4.s.2
+}
 
-# 17. Ring closure syntax with a previously defined structure
+# 17. Ring closure using a previously defined structure
 open_chain = ethane.f {
-    1: hydrogen.port.s 1
-} {} {}
+    1: hydrogen.port 1
+} {} {} {
+    0.s.2,
+    s.1.s.2
+}
 closed_chain = ring(open_chain, 1, 6)
 
-# 18. Parser should reject non-numeric position labels
+# 18. Explicit example matching the proposed port-path notation
+port_export_example = host.f {
+    1: guest.port 1
+} {} {} {
+    0.d.1,
+    0.s.1,
+    0.s.2,
+    s.1.s.2
+}
+
+# 19. Parser should reject non-numeric position labels
 # Expected parser error: position label 'para' is not numeric.
-invalid_named_position = benzene.f {para: OH.port.s 1} {} {}
+invalid_named_position = benzene.f {
+    para: OH.port 1
+} {} {} {}
 
-# 19. Parser should reject a missing position number after the colon
+# 20. Parser should reject a missing position number after the colon
 # Expected parser error: expected numeric position label.
-invalid_missing_position = benzene.f {: OH.port.s 1} {} {}
+invalid_missing_position = benzene.f {
+    : OH.port 1
+} {} {} {}
 
-# 20. Parser should reject malformed guest port selectors
-# Expected parser error: expected one of the supported selectors s, d, t.
-invalid_port_kind = host.f {1: guest.port.q 2} {} {}
+# 21. Parser should reject a missing guest port number
+# Expected parser error: expected a numeric port index after "guest.port".
+invalid_missing_guest_port = host.f {
+    1: guest.port
+} {} {} {}
 
-# 21. Parser should reject a missing argument group
-# Expected parser error: exactly three port groups are required.
-invalid_missing_group = host.f {1: guest.port.s 1} {}
+# 22. Parser should reject a missing argument group
+# Expected parser error: exactly four groups are required.
+invalid_missing_group = host.f {
+    1: guest.port 1
+} {} {}
+
+# 23. Parser should reject malformed export path syntax
+# Expected parser error: expected a valid port path such as 0.d.1 or s.1.s.1.
+invalid_export_path = host.f {} {} {} {
+    0.q.1
+}
