@@ -72,7 +72,7 @@ This is a syntactic compatibility rule, not a complete guarantee of chemical val
 
 ### 4.3 Explicit intramolecular connections
 
-The same connection mechanism is used when both ports belong to the same composed structure. This supports ring closure and other intramolecular links without requiring a distinct core primitive. The Python prototype also provides `ring(...)` as a convenience wrapper around the same intramolecular connection operation; it does not introduce different semantics.
+The same connection mechanism is used when both ports belong to the same composed structure. This supports ring closure and other intramolecular links without requiring a distinct core primitive. The Python prototype provides `ring(...)` as a separate public helper for this operation. It uses the same underlying connection logic but accepts one structure and maps exposed ports directly, without an `intramolecular` flag or `PortRef` source index.
 
 For example, a cyclic structure can be defined by constructing an open chain and explicitly connecting its two appropriate terminal ports. The particular port identifiers must be listed by the definition.
 
