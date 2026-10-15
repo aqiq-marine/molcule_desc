@@ -13,7 +13,7 @@ from .core import (
     double,
     single,
     triple,
-  ring,
+    ring,
 )
 
 # These are atom-topology templates, not virtual atoms. Their names describe
