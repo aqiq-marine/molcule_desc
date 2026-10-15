@@ -316,7 +316,7 @@ phosphate_ester = _graph_structure(
     "phosphate_ester", ["P", "O", "O", "O", "O"],
     [(0, 1, BondType.DOUBLE), (0, 2, BondType.SINGLE),
      (0, 3, BondType.SINGLE), (0, 4, BondType.SINGLE)],
-    valences=[5, 2, 2, 2],
+    valences=[5, 2, 2, 2, 2],
 )
 
 # Linkers and biaryl examples.
