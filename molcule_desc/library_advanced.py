@@ -1,4 +1,4 @@
-""""Higher-level reusable fragments composed from basic library structures."""
+"""Higher-level reusable fragments composed from basic library structures."""
 
 from .core import Port, Structure, single, substitute
 from .library import methane, naphthol, phenyl
