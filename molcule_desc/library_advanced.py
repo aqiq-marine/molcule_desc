@@ -166,22 +166,27 @@ def _binol_bis_imine(amine: str) -> Structure:
             ring_elements = ["N", "C", "N", "C", "C", "C"]
         elements.extend(ring_elements)
         # The imine N is bonded to C2 of the heteroaromatic ring.
-        edges.extend([
-            (imine_n, start + 1, BondType.SINGLE),
-            (start, start + 1, BondType.SINGLE),
-            (start + 1, start + 2, BondType.DOUBLE),
-            (start + 2, start + 3, BondType.SINGLE),
-            (start + 3, start + 4, BondType.DOUBLE),
-            (start + 4, start + 5, BondType.SINGLE),
-            (start + 5, start, BondType.DOUBLE),
-        ])
-        if amine == "2-aminopyrimidine":
-            # Replace the corresponding carbon in the ring with a second N.
-            # This position has two single bonds in the Kekule form.
-            edges[-5] = (start + 2, start + 3, BondType.SINGLE)
-            edges[-4] = (start + 3, start + 4, BondType.DOUBLE)
-            edges[-3] = (start + 4, start + 5, BondType.SINGLE)
-            edges[-2] = (start + 5, start, BondType.DOUBLE)
+        if amine == "2-aminopyridine":
+            edges.extend([
+                (imine_n, start + 1, BondType.SINGLE),
+                (start, start + 1, BondType.SINGLE),
+                (start + 1, start + 2, BondType.DOUBLE),
+                (start + 2, start + 3, BondType.SINGLE),
+                (start + 3, start + 4, BondType.DOUBLE),
+                (start + 4, start + 5, BondType.SINGLE),
+                (start + 5, start, BondType.DOUBLE),
+            ])
+        else:
+            # 2-aminopyrimidine: attach at C2 and include N at ring position 3.
+            edges.extend([
+                (imine_n, start + 1, BondType.SINGLE),
+                (start, start + 1, BondType.DOUBLE),
+                (start + 1, start + 2, BondType.SINGLE),
+                (start + 2, start + 3, BondType.DOUBLE),
+                (start + 3, start + 4, BondType.SINGLE),
+                (start + 4, start + 5, BondType.DOUBLE),
+                (start + 5, start, BondType.SINGLE),
+            ])
     return _graph_structure(f"BINOL bis({amine} imine)", elements, edges)
 
 
