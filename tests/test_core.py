@@ -6,10 +6,10 @@ from molcule_desc import (
     BondType,
     PortRef,
     Structure,
-    XS,
-    XD,
-    XT,
-    XO,
+    hydrogen_single,
+    carbon_double_two_single,
+    carbon_triple_single,
+    oxygen_double,
     acetone,
     atom,
     ported_atom,
@@ -24,11 +24,11 @@ from molcule_desc import (
 )
 
 
-def test_dummy_templates_have_expected_ports():
-    assert set(XS.ports) == {single(1)}
-    assert set(XD.ports) == {single(1), single(2), double(1)}
-    assert set(XT.ports) == {single(1), triple(1)}
-    assert set(XO.ports) == {double(1)}
+def test_atom_topology_templates_have_expected_ports():
+    assert set(hydrogen_single.ports) == {single(1)}
+    assert set(carbon_double_two_single.ports) == {single(1), single(2), double(1)}
+    assert set(carbon_triple_single.ports) == {single(1), triple(1)}
+    assert set(oxygen_double.ports) == {double(1)}
 
 
 def test_atom_declares_element_and_valence():
@@ -94,10 +94,10 @@ def test_consumed_port_cannot_be_published():
         )
 
 
-def test_xt_finalizes_to_ethyne_side_and_xs_to_hydrogen():
-    assert XS.finalize().formula == {"H": 1}
-    assert XT.finalize().formula == {"C": 2, "H": 2}
-    assert XD.finalize().formula == {"C": 2, "H": 4}
+def test_terminal_templates_finalize_to_expected_formulas():
+    assert hydrogen_single.finalize().formula == {"H": 1}
+    assert carbon_triple_single.finalize().formula == {"C": 2, "H": 2}
+    assert carbon_double_two_single.finalize().formula == {"C": 2, "H": 4}
 
 
 def test_intramolecular_bond_closes_ports_without_duplicating_graph():
