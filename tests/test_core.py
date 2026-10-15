@@ -115,3 +115,20 @@ def test_intramolecular_bond_closes_ports_without_duplicating_graph():
     assert len(closed.atoms) == 2
     assert len(closed.bonds) == 2
     assert closed.ports == {}
+
+
+
+def test_ring_closes_two_ports_on_the_same_structure():
+    chain = Structure(
+        "chain",
+        [Atom(0, "C", 4), Atom(1, "C", 4), Atom(2, "C", 4)],
+        [
+            Bond(0, 1, BondType.SINGLE),
+            Bond(1, 2, BondType.SINGLE),
+        ],
+        {single(1): 0, single(2): 2},
+    )
+    cyclic = ring(chain, single(1), single(2), expose={})
+    assert len(cyclic.atoms) == 3
+    assert len(cyclic.bonds) == 3
+    assert cyclic.ports == {}
