@@ -79,9 +79,9 @@ def to_smiles(
     Explicit hydrogen atoms used internally by molcule_desc are removed where
     RDKit considers them removable, producing conventional compact SMILES.
     """
+    mol = to_rdkit_mol(structure, finalize=finalize)
     from rdkit import Chem
 
-    mol = to_rdkit_mol(structure, finalize=finalize)
     mol = Chem.RemoveHs(mol)
     return Chem.MolToSmiles(
         mol,
