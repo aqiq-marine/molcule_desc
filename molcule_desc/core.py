@@ -225,23 +225,28 @@ def bond(
     *,
     expose: Mapping[Port, PortRef],
     name: str | None = None,
+    intramolecular: bool = False,
 ) -> Structure:
     """Connect two compatible ports and explicitly publish remaining ports.
 
     expose maps each output-local Port to the input port it represents.
-    PortRef.source is 0 for left and 1 for right. When left is right, the
-    graph is copied only once, allowing an intramolecular connection.
+    PortRef.source is 0 for left and 1 for right. Each input is copied as a
+    separate occurrence by default, even when both arguments are the same
+    reusable template. Set intramolecular=True to connect two ports within
+    one existing structure without duplicating its graph.
     """
+    if intramolecular and left is not right:
+        raise ValueError("Intramolecular bonding requires the same Structure object")
     if left_port not in left.ports:
         raise ValueError(f"{left.name} has no exposed port {left_port}")
     if right_port not in right.ports:
         raise ValueError(f"{right.name} has no exposed port {right_port}")
     if left_port.bond is not right_port.bond:
         raise ValueError("Bond types do not match")
-    if left is right and left_port == right_port:
+    if intramolecular and left_port == right_port:
         raise ValueError("A port cannot be connected to itself")
 
-    same_structure = left is right
+    same_structure = intramolecular
     atoms: dict[int, Atom] = {}
     bonds: list[Bond] = []
     maps: list[dict[int, int]] = [{}, {}]
