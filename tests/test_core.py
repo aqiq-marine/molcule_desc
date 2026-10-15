@@ -178,3 +178,53 @@ def test_benzene_smiles_is_aromatic_benzene():
     assert len(benzene.ports) == 6
     assert set(benzene.ports.values()) == set(range(6))
     assert to_smiles(benzene) == "c1ccccc1"
+
+
+def test_expanded_library_structures_finalize_with_expected_formulas():
+    import molcule_desc as md
+
+    expected = {
+        "methane": "CH4",
+        "ethane": "C2H6",
+        "propane": "C3H8",
+        "acetylene": "C2H2",
+        "cyclohexane": "C6H12",
+        "ethanol": "C2H6O",
+        "pyridine": "C5H5N",
+        "pyrrole": "C4H5N",
+        "thiophene": "C4H4S",
+        "imidazole": "C3H4N2",
+        "naphthalene": "C10H8",
+        "biphenyl": "C12H10",
+        "diphenyl_ether": "C12H10O",
+    }
+    for name, formula in expected.items():
+        assert getattr(md, name).finalize().formula_string() == formula
+
+
+def test_expanded_library_smiles_for_common_structures():
+    pytest.importorskip("rdkit")
+    import molcule_desc as md
+
+    expected = {
+        "ethane": "CC",
+        "propane": "CCC",
+        "acetylene": "C#C",
+        "cyclohexane": "C1CCCCC1",
+        "pyridine": "c1ccncc1",
+        "naphthalene": "c1ccc2ccccc2c1",
+    }
+    for name, smiles in expected.items():
+        assert to_smiles(getattr(md, name)) == smiles
+
+
+def test_library_fragments_expose_remaining_valences_as_ports():
+    import molcule_desc as md
+
+    assert len(md.methane.ports) == 4
+    assert len(md.ethane.ports) == 6
+    assert len(md.benzene.ports) == 6
+    assert len(md.hydroxyl.ports) == 2
+    assert len(md.amino.ports) == 3
+    assert len(md.phosphine.ports) == 3
+    assert len(md.phosphate_ester.ports) == 3
