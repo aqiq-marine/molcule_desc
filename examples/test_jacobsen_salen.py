@@ -33,3 +33,19 @@ def test_jacobsen_salen_matches_reference_smiles_connectivity():
         reference, canonical=True, isomericSmiles=False
     )
     assert generated_connectivity == reference_connectivity
+
+
+
+def test_fragment_composed_jacobsen_salen_matches_reference():
+    pytest.importorskip("rdkit")
+    from rdkit import Chem
+    from examples.jacobsen_salen_fragments import build_jacobsen_salen as build_from_fragments
+
+    generated = Chem.MolFromSmiles(to_smiles(build_from_fragments()))
+    reference = Chem.MolFromSmiles(REFERENCE_SMILES)
+    assert generated is not None
+    assert reference is not None
+    assert build_from_fragments().finalize().formula_string() == "C36H54N2O2"
+    assert Chem.MolToSmiles(generated, canonical=True, isomericSmiles=False) == Chem.MolToSmiles(
+        reference, canonical=True, isomericSmiles=False
+    )
