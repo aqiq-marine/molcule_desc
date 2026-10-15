@@ -14,6 +14,7 @@ from molcule_desc import (
     atom,
     ported_atom,
     bond,
+    ring,
     carbonyl,
     double,
     ethylene,
