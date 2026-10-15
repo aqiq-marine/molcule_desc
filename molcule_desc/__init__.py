@@ -26,7 +26,8 @@ from .library import (
     pyridine, pyrrole, thiophene, imidazole, naphthalene,
     fluoro, chloro, bromo, iodo, thiol, thioether, sulfone, phosphine,
     phosphine_oxide, phosphate_ester, methylene, ethylene_linker, ethanol,
-    diphenyl_ether,
+    diphenyl_ether, naphthol, indole, benzofuran, benzothiophene,
+    quinoline, isoquinoline, anthracene,
 )
 
 __all__ = [
@@ -42,5 +43,6 @@ __all__ = [
     "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
     "iodo", "thiol", "thioether", "sulfone", "phosphine",
     "phosphine_oxide", "phosphate_ester", "methylene", "ethylene_linker",
-    "ethanol", "biphenyl", "diphenyl_ether",
+    "ethanol", "biphenyl", "diphenyl_ether", "naphthol", "indole",
+    "benzofuran", "benzothiophene", "quinoline", "isoquinoline", "anthracene",
 ]
