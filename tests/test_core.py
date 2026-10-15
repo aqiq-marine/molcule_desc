@@ -237,3 +237,27 @@ def test_tert_butyl_library_fragment_is_built_from_methane_units():
     assert len(md.tert_butyl.ports) == 1
     # C4H9 is the tert-butyl substituent; its single port attaches to a parent.
     assert md.tert_butyl.formula == {"C": 4, "H": 9}
+
+
+
+def test_substitute_replaces_multiple_host_ports_and_preserves_guest_ports():
+    from molcule_desc import methane, substitute
+
+    result = substitute(
+        benzene,
+        {
+            single(1): (methane, single(1)),
+            single(4): (methane, single(1)),
+        },
+    )
+    assert len(result.atoms) == 8
+    # Four benzene ports remain, plus three exposed ports from each methane.
+    assert len(result.ports) == 10
+    assert result.formula == {"C": 8}
+
+
+def test_substitute_rejects_unknown_host_port():
+    from molcule_desc import methane, substitute
+
+    with pytest.raises(ValueError, match="Host has no exposed ports"):
+        substitute(benzene, {single(99): (methane, single(1))})
