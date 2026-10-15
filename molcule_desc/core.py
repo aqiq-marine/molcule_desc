@@ -396,6 +396,7 @@ def substitute(
 
     current = host
     host_port_map: dict[Port, Port] = {port: port for port in host.ports}
+    guest_port_map: list[Port] = []
 
     for step, (original_port, (guest, guest_port)) in enumerate(
         substitutions.items(), start=1
@@ -409,6 +410,7 @@ def substitute(
         next_index: dict[BondType, int] = {}
         expose: dict[Port, PortRef] = {}
         new_host_port_map: dict[Port, Port] = {}
+        new_guest_port_map: list[Port] = []
 
         def publish(source: int, old_port: Port) -> Port:
             index = next_index.get(old_port.bond, 1)
@@ -422,9 +424,12 @@ def substitute(
                 continue
             new_host_port_map[original] = publish(0, old_port)
 
+        for old_port in guest_port_map:
+            new_guest_port_map.append(publish(0, old_port))
+
         for old_port in guest.ports:
             if old_port != guest_port:
-                publish(1, old_port)
+                new_guest_port_map.append(publish(1, old_port))
 
         current = bond(
             current,
@@ -435,6 +440,7 @@ def substitute(
             name=name if step == len(substitutions) else f"{host.name} substitution {step}",
         )
         host_port_map = new_host_port_map
+        guest_port_map = new_guest_port_map
 
     current.name = name or f"{host.name} substituted"
     return current
