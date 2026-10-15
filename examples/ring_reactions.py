@@ -25,15 +25,16 @@ def _lactone(ring_size: int) -> Structure:
         *[Atom(i, "C", 4) for i in range(2, ring_size)],
         Atom(ring_size, "O", 2),
     ]
-    bonds = [Bond(0, 1, BondType.DOUBLE)]
+    bonds = [
+        Bond(0, 1, BondType.DOUBLE),
+        Bond(0, 2, BondType.SINGLE),
+    ]
     bonds.extend(
         Bond(i, i + 1, BondType.SINGLE)
-        for i in range(0, ring_size - 1)
-        if i != 1
+        for i in range(2, ring_size)
     )
     # The carbonyl carbon (0) connects to the first ring carbon (2); the
-    # sequence then continues through the methylene chain to ring oxygen.
-    # The list comprehension above skips the exocyclic carbonyl O (atom 1).
+    # chain continues through the methylene units to ring oxygen.
     ports = {single(1): 0, single(2): ring_size}
     precursor = Structure(
         f"{ring_size}-membered lactone precursor", atoms, bonds, ports
