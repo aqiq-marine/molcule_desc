@@ -107,18 +107,39 @@ class Structure:
     def atom(
         cls,
         element: str,
-        ports: Iterable[Port] = (),
         *,
         name: str | None = None,
         formal_charge: int = 0,
     ) -> "Structure":
-        """Create a one-atom structure with ports anchored on that atom."""
+        """Create a structure containing one atom and no exposed ports.
+
+        This represents the atom itself, not an attachment template. It is
+        valid as an intermediate structure; finalize() does not infer missing
+        bonds or hydrogens when there are no ports.
+        """
+        atom = Atom(0, element, formal_charge)
+        return cls(name or element, [atom])
+
+    @classmethod
+    def ported_atom(
+        cls,
+        element: str,
+        ports: Iterable[Port],
+        *,
+        name: str | None = None,
+        formal_charge: int = 0,
+    ) -> "Structure":
+        """Create a one-atom attachment template with explicitly shaped ports.
+
+        Each port reserves valence according to its bond order. Unconnected
+        ports are consumed by bond() or capped by finalize().
+        """
         port_list = list(ports)
         if len(port_list) != len(set(port_list)):
             raise ValueError("Duplicate port identifiers")
         atom = Atom(0, element, formal_charge)
         return cls(
-            name or element,
+            name or f"{element} template",
             [atom],
             ports={port: atom.id for port in port_list},
         )
