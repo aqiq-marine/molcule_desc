@@ -307,6 +307,15 @@ pyridine = _graph_structure(
          BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE],
     ),
 )
+pyrimidine = _graph_structure(
+    "pyrimidine", ["N", "C", "N", "C", "C", "C"],
+    _cycle_edges(
+        [0, 1, 2, 3, 4, 5],
+        [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE,
+         BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
+    ),
+)
+
 pyrrole = _graph_structure(
     "pyrrole", ["N", "C", "C", "C", "C"],
     _cycle_edges(
