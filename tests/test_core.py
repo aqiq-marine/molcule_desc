@@ -22,6 +22,7 @@ from molcule_desc import (
     methanimine,
     single,
     triple,
+    to_smiles,
 )
 
 
@@ -152,3 +153,18 @@ def test_ring_exports_remaining_ports_without_port_refs():
         expose={single(1): single(3)},
     )
     assert cyclic.ports == {single(1): 1}
+
+
+
+def test_rdkit_smiles_conversion_for_library_molecules():
+    pytest.importorskip("rdkit")
+    assert to_smiles(ethylene) == "C=C"
+    assert to_smiles(formaldehyde) == "C=O"
+    assert to_smiles(acetone) == "CC(C)=O"
+
+
+def test_rdkit_smiles_conversion_requires_finalized_structure_when_requested():
+    pytest.importorskip("rdkit")
+    template = ported_atom(atom("C", 4), [single(1)])
+    with pytest.raises(ValueError, match="exposed ports"):
+        to_smiles(template, finalize=False)
