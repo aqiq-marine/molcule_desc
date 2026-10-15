@@ -175,4 +175,6 @@ def test_benzene_smiles_is_aromatic_benzene():
     pytest.importorskip("rdkit")
     assert benzene.formula == {"C": 6}
     assert len(benzene.bonds) == 6
+    assert len(benzene.ports) == 6
+    assert set(benzene.ports.values()) == set(range(6))
     assert to_smiles(benzene) == "c1ccccc1"
