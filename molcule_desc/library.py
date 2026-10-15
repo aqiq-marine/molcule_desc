@@ -227,10 +227,27 @@ propane = _graph_structure(
 acetylene = _graph_structure(
     "acetylene", ["C", "C"], [(0, 1, BondType.TRIPLE)]
 )
-cyclohexane = _graph_structure(
-    "cyclohexane", ["C"] * 6,
-    _cycle_edges([0, 1, 2, 3, 4, 5], [BondType.SINGLE] * 6),
-)
+# Cycloalkanes from three- to ten-membered rings.
+# The ring closure consumes one valence on each terminal carbon; remaining
+# valences are exposed as ports and become hydrogens on finalize().
+def _cycloalkane(size: int) -> Structure:
+    if not 3 <= size <= 10:
+        raise ValueError("Cycloalkane ring size must be between 3 and 10")
+    return _graph_structure(
+        f"cyclo{size}ane",
+        ["C"] * size,
+        _cycle_edges(list(range(size)), [BondType.SINGLE] * size),
+    )
+
+
+cyclopropane = _cycloalkane(3)
+cyclobutane = _cycloalkane(4)
+cyclopentane = _cycloalkane(5)
+cyclohexane = _cycloalkane(6)
+cycloheptane = _cycloalkane(7)
+cyclooctane = _cycloalkane(8)
+cyclononane = _cycloalkane(9)
+cyclodecane = _cycloalkane(10)
 
 # These ring structures expose all substitutable positions. Consuming one port
 # gives a phenyl substituent; consuming two gives a phenylene linker.
