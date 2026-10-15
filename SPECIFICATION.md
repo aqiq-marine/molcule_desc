@@ -72,7 +72,7 @@ This is a syntactic compatibility rule, not a complete guarantee of chemical val
 
 ### 4.3 Explicit intramolecular connections
 
-The same connection mechanism is used when both ports belong to the same composed structure. This supports ring closure and other intramolecular links without introducing a dedicated `ring` primitive.
+The same connection mechanism is used when both ports belong to the same composed structure. This supports ring closure and other intramolecular links without requiring a distinct core primitive. The Python prototype also provides `ring(...)` as a convenience wrapper around the same intramolecular connection operation; it does not introduce different semantics.
 
 For example, a cyclic structure can be defined by constructing an open chain and explicitly connecting its two appropriate terminal ports. The particular port identifiers must be listed by the definition.
 
@@ -164,7 +164,7 @@ The current design does not require dedicated primitives for:
 - loops, `map`, or general-purpose iteration;
 - general reaction mechanisms or synthetic procedures.
 
-Rings are expressed using explicit connections between terminal ports. Common molecular building blocks belong in libraries rather than being hard-coded into the language.
+Rings are expressed using explicit connections between terminal ports. A host-language convenience helper such as Python's `ring(...)` may wrap this operation, but ring closure is not a separate language-level primitive. Common molecular building blocks belong in libraries rather than being hard-coded into the language.
 
 Stereochemistry, isotopes, formal charges, aromaticity, coordination compounds, polymers, and nonstandard valence states are not yet fully specified.
 
