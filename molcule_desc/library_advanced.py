@@ -1,6 +1,6 @@
 """Higher-level reusable fragments composed from basic library structures."""
 
-from .core import Structure, single, substitute
+from .core import Port, Structure, single, substitute
 from .library import (
     bromo, carbonyl, imine, iodo, methane, naphthalene, naphthol, phenyl, pyridine,
 )
