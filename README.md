@@ -67,7 +67,7 @@ The core API is implemented with runtime validation. Bond order is the only enum
 ```python
 from molcule_desc import (
     acetone, ethylene, methanimine,
-    XS, XD, XT,
+    hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
 )
 
 print(ethylene.finalize().formula_string())    # C2H4
@@ -79,14 +79,14 @@ from molcule_desc import atom, ported_atom, single, double
 
 carbon = atom("C", 4)
 carbon_template = ported_atom(
-    carbon, [double(1), single(1), single(2)], name="XD"
+    carbon, [double(1), single(1), single(2)], name="carbon_double_two_single"
 )
 
-# Terminal templates:
-# XS = H with one single-bond port
-# XD = C with one double-bond port and two single-bond (H) ports
-# XT = C with one triple-bond port and one single-bond (H) port
-print(XD.ports)
+# Atom-topology templates, named by their available bond ports.
+print(carbon_double_two_single.ports)
+print(carbon_triple_single.ports)
+print(oxygen_double.ports)
+print(hydrogen_single.ports)
 ```
 
 `atom(element, valence)` creates an atom specification with an explicit valence (for example, `atom("C", 4)` or `atom("O", 2)`). `ported_atom(atom, ports)` turns that atom into a one-atom `Structure` with explicit single, double, or triple bond ports. This separates the atom's element/valence definition from the attachment template.
