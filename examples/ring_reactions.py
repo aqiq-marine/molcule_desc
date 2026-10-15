@@ -27,7 +27,7 @@ def _lactone(ring_size):
 
     # The first methylene is already present; add enough to reach the desired
     # ring size. Unexposed methylene ports are capped with hydrogen by bond().
-    for _ in range(ring_size - 4):
+    for _ in range(ring_size - 3):
         chain = _join(
             chain, active, methylene, single(1),
             {
