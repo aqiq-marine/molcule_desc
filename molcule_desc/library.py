@@ -14,10 +14,12 @@ from .core import (
 )
 
 # Terminal/dummy structures. XS is a terminal H; XD is a CH2-side fragment;
-# XT is a CH-side fragment. XD/XT expose their hydrogen positions as ports.
+# XT is a CH-side fragment. Their unconsumed ports remain available for
+# composition when explicitly exported.
 XS = Structure.atom("H", [single(1)], name="XS")
 XD = Structure.atom("C", [double(1), single(1), single(2)], name="XD")
 XT = Structure.atom("C", [triple(1), single(1)], name="XT")
+XO = Structure.atom("O", [double(1)], name="XO")
 
 
 def _ethylene() -> Structure:
@@ -48,10 +50,10 @@ def _methanimine() -> Structure:
 
 
 def _carbonyl() -> Structure:
-    carbon = Structure.atom("C", [double(1), single(1), single(2)], name="carbonyl C")
-    oxygen = Structure.atom("O", [double(1)], name="carbonyl O")
+    # XD's double port is consumed to form C=O; its two single ports are
+    # still exposed so the carbonyl carbon can be connected to substituents.
     return bond(
-        carbon, double(1), oxygen, double(1),
+        XD, double(1), XO, double(1),
         expose={
             single(1): PortRef(0, single(1)),
             single(2): PortRef(0, single(2)),
@@ -92,4 +94,5 @@ def _acetone() -> Structure:
 ethylene = _ethylene()
 methanimine = _methanimine()
 carbonyl = _carbonyl()
+formaldehyde = carbonyl
 acetone = _acetone()
