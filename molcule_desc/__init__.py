@@ -21,15 +21,6 @@ from .library_advanced import (
     biphenyl,
     tert_butyl,
     binol,
-    binol_3_3_dibromo,
-    binol_3_3_diiodo,
-    binol_6_6_dibromo,
-    binol_3_3_dimethyl,
-    binol_2_2_diformyl,
-    binol_bis_2_pyridyl_imine,
-    binol_bis_2_pyrimidyl_imine,
-    binol_6_6_di_tert_butyl,
-    binol_6_6_diphenyl,
 )
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
@@ -58,10 +49,7 @@ __all__ = [
     "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
     "iodo", "thiol", "thioether", "sulfone", "phosphine",
     "phosphine_oxide", "phosphate_ester", "methylene", "ethylene_linker",
-    "ethanol", "biphenyl", "binol", "binol_3_3_dibromo", "binol_3_3_diiodo",
-    "binol_6_6_dibromo", "binol_3_3_dimethyl", "binol_2_2_diformyl",
-    "binol_bis_2_pyridyl_imine", "binol_bis_2_pyrimidyl_imine",
-    "binol_6_6_di_tert_butyl", "binol_6_6_diphenyl",
+    "ethanol", "biphenyl", "binol",
     "diphenyl_ether", "naphthol", "indole", "benzofuran",
     "benzothiophene", "quinoline", "isoquinoline", "anthracene",
 ]
