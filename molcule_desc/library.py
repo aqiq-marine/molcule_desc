@@ -145,10 +145,20 @@ def _tert_butyl() -> Structure:
     attachment_port = next(
         port for port, atom_id in central.ports.items() if atom_id == central_atom_id
     )
+    atoms = dict(central.atoms)
+    bonds = list(central.bonds)
+    next_atom_id = max(atoms) + 1
+    for port, anchor in central.ports.items():
+        if anchor == central_atom_id:
+            continue
+        hydrogen_id = next_atom_id
+        next_atom_id += 1
+        atoms[hydrogen_id] = Atom(hydrogen_id, "H", 1)
+        bonds.append(Bond(anchor, hydrogen_id, BondType.SINGLE))
     return Structure(
         "tert-butyl",
-        central.atoms.values(),
-        central.bonds,
+        atoms.values(),
+        bonds,
         {single(1): central_atom_id},
     )
 
