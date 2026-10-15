@@ -338,10 +338,12 @@ thioether = _graph_structure(
 sulfone = _graph_structure(
     "sulfone", ["S", "O", "O"],
     [(0, 1, BondType.DOUBLE), (0, 2, BondType.DOUBLE)],
+    valences=[6, 2, 2],
 )
 phosphine = _graph_structure("phosphine", ["P"], [], valences=[3])
 phosphine_oxide = _graph_structure(
-    "phosphine_oxide", ["P", "O"], [(0, 1, BondType.DOUBLE)]
+    "phosphine_oxide", ["P", "O"], [(0, 1, BondType.DOUBLE)],
+    valences=[5, 2],
 )
 phosphate_ester = _graph_structure(
     "phosphate_ester", ["P", "O", "O", "O", "O"],
