@@ -1,0 +1,97 @@
+# molcule_desc parser input fixtures
+#
+# Purpose:
+#   Parser-level input examples only. These examples are intended to exercise
+#   lexical and grammatical constructs; they are not a semantic test suite.
+#
+# Assumptions for this draft:
+#   - Lines beginning with # are comments.
+#   - Definitions use: name = expression
+#   - A structure application uses named ports: structure(port: value, ...)
+#   - Explicit composition uses compose(instance: Structure, ...) { ... }
+#   - A composition body may contain connect statements and an export section.
+#   - Port names may be identifiers or numeric labels.
+#
+# The grammar is provisional. The parser should produce syntax trees without
+# requiring names such as ethane, OH, Link, or A to exist in a library.
+
+# 1. Simple name references and definitions
+alkane = ethane
+hydroxyl = OH
+
+# 2. One named port with an identifier
+phenol = benzene(para: OH)
+
+# 3. Numeric port names; 4 and 9 have no special grammar-level chemistry meaning
+dihydroxybiphenyl = biphenyl(4: OH, 9: OH)
+
+# 4. Multiple substitutions and whitespace variations
+substituted_ethane = ethane(
+    1: nitro,
+    3: OH,
+    6: NH2
+)
+
+# 5. Nested structure applications
+nested = benzene(4: benzene(4: OH))
+
+# 6. Composition with two input instances, one connection, and exported ports
+linked = compose(a: Link, b: Link) {
+    connect a.right with b.left
+
+    export:
+        left = a.left
+        right = b.right
+}
+
+# 7. Composition with more than one connection
+joined = compose(a: Link, b: Link, c: Link) {
+    connect a.right with b.left
+    connect b.right with c.left
+
+    export:
+        left = a.left
+        right = c.right
+}
+
+# 8. Numeric result-port names
+renamed = compose(a: Link) {
+    export:
+        4 = a.left
+        9 = a.right
+}
+
+# 9. Double-bond and triple-bond port references
+alkene = compose(a: DoubleEnd, b: DoubleEnd) {
+    connect a.end with b.end
+}
+
+alkyne = compose(a: TripleEnd, b: TripleEnd) {
+    connect a.end with b.end
+}
+
+# 10. Intramolecular connection: both ports belong to one instance
+ring = compose(chain: Link) {
+    connect chain.left with chain.right
+}
+
+# 11. A definition can reference a previously defined composition
+first = compose(a: Link, b: Link) {
+    connect a.right with b.left
+    export:
+        left = a.left
+        right = b.right
+}
+
+second = compose(chain: first, cap: SingleEnd) {
+    connect chain.right with cap.end
+    export:
+        remaining = chain.left
+}
+
+# 12. Port names that resemble familiar locants remain ordinary names
+example = compose(aromatic: BenzeneLike, substituent: OH) {
+    connect aromatic.4 with substituent.end
+    export:
+        9 = aromatic.9
+}
