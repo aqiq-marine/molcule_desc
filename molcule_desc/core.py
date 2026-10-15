@@ -19,7 +19,7 @@ class BondType(Enum):
     TRIPLE = 3
 
 
-@dataclass(frozen=True, order=True)
+@dataclass(frozen=True)
 class Port:
     bond: BondType
     index: int
@@ -276,6 +276,8 @@ def bond(
 
     input_ports = [left.ports, right.ports]
     consumed = [{left_port}, {right_port}]
+    if same_structure:
+        consumed[0].add(right_port)
     output_ports: dict[Port, int] = {}
     published_sources: set[tuple[int, Port]] = set()
 
