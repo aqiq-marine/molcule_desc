@@ -191,6 +191,7 @@ def test_expanded_library_structures_finalize_with_expected_formulas():
         "cyclohexane": "C6H12",
         "ethanol": "C2H6O",
         "pyridine": "C5H5N",
+        "pyrimidine": "C4H4N2",
         "pyrrole": "C4H5N",
         "thiophene": "C4H4S",
         "imidazole": "C3H4N2",
