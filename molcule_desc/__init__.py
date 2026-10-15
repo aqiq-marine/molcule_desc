@@ -17,7 +17,20 @@ from .core import (
     triple,
 )
 from .smiles import to_rdkit_mol, to_smiles
-from .library_advanced import (\n    biphenyl, tert_butyl, binol, binol_3_3_dibromo,\n    binol_3_3_diiodo, binol_6_6_dibromo, binol_3_3_dimethyl,\n)
+from .library_advanced import (
+    biphenyl,
+    tert_butyl,
+    binol,
+    binol_3_3_dibromo,
+    binol_3_3_diiodo,
+    binol_6_6_dibromo,
+    binol_3_3_dimethyl,
+    binol_2_2_diformyl,
+    binol_bis_2_pyridyl_imine,
+    binol_bis_2_pyrimidyl_imine,
+    binol_6_6_di_tert_butyl,
+    binol_6_6_diphenyl,
+)
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
     acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
@@ -45,6 +58,10 @@ __all__ = [
     "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
     "iodo", "thiol", "thioether", "sulfone", "phosphine",
     "phosphine_oxide", "phosphate_ester", "methylene", "ethylene_linker",
-    "ethanol", "biphenyl", "binol", "binol_3_3_dibromo", "binol_3_3_diiodo",\n    "binol_6_6_dibromo", "binol_3_3_dimethyl", "diphenyl_ether", "naphthol", "indole",
-    "benzofuran", "benzothiophene", "quinoline", "isoquinoline", "anthracene",
+    "ethanol", "biphenyl", "binol", "binol_3_3_dibromo", "binol_3_3_diiodo",
+    "binol_6_6_dibromo", "binol_3_3_dimethyl", "binol_2_2_diformyl",
+    "binol_bis_2_pyridyl_imine", "binol_bis_2_pyrimidyl_imine",
+    "binol_6_6_di_tert_butyl", "binol_6_6_diphenyl",
+    "diphenyl_ether", "naphthol", "indole", "benzofuran",
+    "benzothiophene", "quinoline", "isoquinoline", "anthracene",
 ]
