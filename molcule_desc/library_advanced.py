@@ -1,7 +1,7 @@
 """Higher-level reusable fragments composed from basic library structures."""
 
-from .core import Port, Structure, single, substitute
-from .library import methane, naphthol, phenyl
+from .core import BondType, Port, Structure, single, substitute
+from .library import _graph_structure, methane, naphthol, phenyl
 
 
 def _tert_butyl() -> Structure:
@@ -38,14 +38,46 @@ def _port_at_atom(structure: Structure, atom_id: int) -> Port:
 
 
 def _compose_binol_base() -> Structure:
-    """Compose BINOL from two naphthol fragments joined at their 1-positions.
-
-    The two consumed biaryl ports are the only ports removed. Every other
-    naphthol port, including ring-substitution positions and both O-H ports,
-    remains exposed so that this scaffold can be reused compositionally.
-    """
+    """Compose BINOL from two naphthol fragments joined at their 1-positions."""
     join_port = _port_at_atom(naphthol, 1)
     return substitute(naphthol, {join_port: (naphthol, join_port)}, name="BINOL")
 
 
 binol = _compose_binol_base()
+
+
+def _tetralol() -> Structure:
+    """Build a 2-tetralol fragment with the phenolic ring remaining aromatic.
+
+    Atom numbering follows the naphthol fragment: the hydroxyl-bearing
+    aromatic ring is atoms 0-5; atoms 4-5 is the shared fused bond. The
+    opposite ring is hydrogenated by making its two non-fused double bonds
+    single and changing the Kekule pattern on the aromatic ring.
+    """
+    return _graph_structure(
+        "tetralol",
+        ["C"] * 10 + ["O"],
+        [
+            (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+            (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+            (4, 5, BondType.SINGLE), (5, 0, BondType.DOUBLE),
+            (5, 6, BondType.SINGLE), (6, 7, BondType.SINGLE),
+            (7, 8, BondType.SINGLE), (8, 9, BondType.SINGLE),
+            (9, 4, BondType.SINGLE), (2, 10, BondType.SINGLE),
+        ],
+        valences=[4] * 10 + [2],
+    )
+
+
+tetralol = _tetralol()
+
+
+def _compose_h8_binol() -> Structure:
+    """Join two tetralol fragments at their 1-positions (H8-BINOL)."""
+    join_port = _port_at_atom(tetralol, 1)
+    return substitute(
+        tetralol, {join_port: (tetralol, join_port)}, name="H8-BINOL"
+    )
+
+
+h8_binol = _compose_h8_binol()
