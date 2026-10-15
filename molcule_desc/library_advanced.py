@@ -123,35 +123,26 @@ binol_6_6_dibromo = _binol("6,6'-dibromo-BINOL", {8: "Br", 19: "Br"})
 binol_3_3_dimethyl = _binol("3,3'-dimethyl-BINOL", {2: "C", 13: "C"})
 
 
-def _binol_ring_edges() -> list[tuple[int, int, BondType]]:
-    """Return the two fused naphthalene Kekule graphs joined at 1,1'."""
-    return [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
-        (9, 4, BondType.SINGLE),
-        (10, 11, BondType.DOUBLE), (11, 12, BondType.SINGLE),
-        (12, 13, BondType.DOUBLE), (13, 14, BondType.SINGLE),
-        (14, 15, BondType.DOUBLE), (15, 10, BondType.SINGLE),
-        (15, 16, BondType.SINGLE), (16, 17, BondType.DOUBLE),
-        (17, 18, BondType.SINGLE), (18, 19, BondType.DOUBLE),
-        (19, 14, BondType.SINGLE),
-        (0, 10, BondType.SINGLE),
-    ]
+def _compose_binaphthyl_base() -> Structure:
+    """Join two naphthalene fragments through their 1-position ports."""
+    join_port = _port_at_atom(naphthalene, 1)
+    return substitute(
+        naphthalene,
+        {join_port: (naphthalene, join_port)},
+        name="1,1'-binaphthyl",
+    )
 
 
 def _binol_diformyl() -> Structure:
-    """Build 2,2'-diformyl-1,1'-binaphthyl (the OH groups are replaced)."""
-    elements = ["C"] * 22 + ["O", "O"]
-    edges = _binol_ring_edges()
-    # Ring atoms 1 and 11 are the 2,2'-positions. Each now bears -CHO.
-    edges.extend([
-        (1, 20, BondType.SINGLE), (20, 22, BondType.DOUBLE),
-        (11, 21, BondType.SINGLE), (21, 23, BondType.DOUBLE),
-    ])
-    return _graph_structure("2,2'-diformyl-1,1'-binaphthyl", elements, edges)
+    """Build 2,2'-diformyl-1,1'-binaphthyl from naphthalene and carbonyl fragments."""
+    result = _compose_binaphthyl_base()
+    result = _replace_with_fragment(
+        result, 2, carbonyl, name="2-formyl-1,1'-binaphthyl"
+    )
+    result = _replace_with_fragment(
+        result, 13, carbonyl, name="2,2'-diformyl-1,1'-binaphthyl"
+    )
+    return result
 
 
 binol_2_2_diformyl = _binol_diformyl()
