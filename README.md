@@ -74,13 +74,12 @@ print(ethylene.finalize().formula_string())    # C2H4
 print(methanimine.finalize().formula_string())  # CH3N
 print(acetone.finalize().formula_string())      # C3H6O
 
-# Structure.atom creates a bare atom; Structure.ported_atom creates an
-# atom template whose valence is represented by explicit attachment ports.
-from molcule_desc import Structure, single, double
+# atom() declares an atom and its valence; ported_atom() gives that atom ports.
+from molcule_desc import atom, ported_atom, single, double
 
-bare_carbon = Structure.atom("C")
-carbon_template = Structure.ported_atom(
-    "C", [double(1), single(1), single(2)], name="XD"
+carbon = atom("C", 4)
+carbon_template = ported_atom(
+    carbon, [double(1), single(1), single(2)], name="XD"
 )
 
 # Terminal templates:
@@ -90,7 +89,7 @@ carbon_template = Structure.ported_atom(
 print(XD.ports)
 ```
 
-`Structure.atom(element)` creates a bare atom without attachment ports. `Structure.ported_atom(element, ports)` creates a one-atom structure whose available valences are represented as explicit single, double, or triple bond ports. Use the latter for reusable connection templates such as `XD`; use the former when you need an atom without declaring attachment sites yet.
+`atom(element, valence)` creates an atom specification with an explicit valence (for example, `atom("C", 4)` or `atom("O", 2)`). `ported_atom(atom, ports)` turns that atom into a one-atom `Structure` with explicit single, double, or triple bond ports. This separates the atom's element/valence definition from the attachment template.
 
 Structures are composed with `bond(left, left_port, right, right_port, expose=...)`.
 The `expose` mapping is explicit: each result-local port points to a source port through `PortRef(0, ...)` (left input) or `PortRef(1, ...)` (right input). Compatible ports are consumed and a graph bond is added. Unexported, unconsumed ports are terminalized during composition; call `finalize()` to resolve the ports that remain exposed by the final structure. To connect two ports in one structure, pass the same structure twice and set `intramolecular=True`.
