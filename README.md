@@ -104,6 +104,39 @@ print(to_smiles(acetone))  # CC(C)=O
 
 Install RDKit integration with `pip install -e '.[chemistry]'`, then run tests with `pip install -e . pytest` followed by `pytest`. The converter finalizes exposed ports by default, sanitizes the RDKit molecule, and emits canonical SMILES by default. Aromaticity and stereochemistry are not inferred by the converter.
 
+## Built-in structure library
+
+The prototype includes reusable hydrocarbon skeletons, functional groups, heterocycles,
+halogen substituents, sulfur/phosphorus groups, and linkers. Library structures expose
+their remaining valences as single-bond ports; when a port is left unused, `finalize()`
+completes it with hydrogen.
+
+```python
+from molcule_desc import benzene, hydroxyl, to_smiles
+
+# Every benzene position is an available attachment port.
+assert len(benzene.ports) == 6
+print(to_smiles(benzene))  # c1ccccc1
+```
+
+Available names include:
+
+- **Hydrocarbons:** `methane`, `ethane`, `propane`, `ethylene`, `acetylene`,
+  `cyclohexane`, `benzene`, `naphthalene`
+- **Oxygen groups:** `hydroxyl`, `ether`, `carbonyl`, `carboxyl`, `ester`
+- **Nitrogen groups:** `amino`, `amine`, `amide`, `nitrile`, `imine`
+- **Heterocycles:** `pyridine`, `pyrrole`, `thiophene`, `imidazole`
+- **Halogens:** `fluoro`, `chloro`, `bromo`, `iodo`
+- **Sulfur/phosphorus:** `thiol`, `thioether`, `sulfone`, `phosphine`,
+  `phosphine_oxide`, `phosphate_ester`
+- **Linkers and examples:** `methylene`, `ethylene_linker`, `phenyl`,
+  `phenylene`, `biphenyl`, `diphenyl_ether`, `ethanol`
+
+These are graph templates, not a chemically exhaustive database. In particular,
+aromatic rings are stored as Kekulé structures and aromaticity is perceived by RDKit
+during SMILES conversion. Port positions currently have numeric identifiers; named
+positions such as ortho/meta/para are not yet modeled.
+
 ## Documentation
 
 - [Language specification (proposal)](SPECIFICATION.md)
