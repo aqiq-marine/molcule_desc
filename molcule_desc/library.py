@@ -203,10 +203,24 @@ cyclohexane = _graph_structure(
     _cycle_edges([0, 1, 2, 3, 4, 5], [BondType.SINGLE] * 6),
 )
 
-# These ring structures expose all substitutable positions. Consume one port
-# for a phenyl substituent, or two ports for a phenylene linker.
-phenyl = benzene
-phenylene = benzene
+# These ring structures expose all substitutable positions. Consuming one port
+# gives a phenyl substituent; consuming two gives a phenylene linker.
+phenyl = _graph_structure(
+    "phenyl", ["C"] * 6,
+    _cycle_edges(
+        [0, 1, 2, 3, 4, 5],
+        [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE,
+         BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
+    ),
+)
+phenylene = _graph_structure(
+    "phenylene", ["C"] * 6,
+    _cycle_edges(
+        [0, 1, 2, 3, 4, 5],
+        [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE,
+         BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
+    ),
+)
 
 # Oxygen-containing groups and common carbonyl derivatives.
 hydroxyl = _graph_structure("hydroxyl", ["O"], [])
