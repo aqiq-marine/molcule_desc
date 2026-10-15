@@ -405,3 +405,92 @@ def _biaryl(name: str, *, ether_link: bool) -> Structure:
 
 
 diphenyl_ether = _biaryl("diphenyl_ether", ether_link=True)
+
+
+# Fused-ring aromatic compounds represented as Kekule graphs.
+naphthol = _graph_structure(
+    "naphthol", ["C"] * 10 + ["O"],
+    [
+        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
+        (9, 4, BondType.SINGLE), (2, 10, BondType.SINGLE),
+    ],
+    valences=[4] * 10 + [2],
+)
+
+indole = _graph_structure(
+    "indole", ["C"] * 8 + ["N"],
+    [
+        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        (4, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 5, BondType.SINGLE),
+    ],
+    valences=[4] * 8 + [3],
+)
+
+benzofuran = _graph_structure(
+    "benzofuran", ["C"] * 8 + ["O"],
+    [
+        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        (4, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 5, BondType.SINGLE),
+    ],
+    valences=[4] * 8 + [2],
+)
+
+benzothiophene = _graph_structure(
+    "benzothiophene", ["C"] * 8 + ["S"],
+    [
+        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        (4, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 5, BondType.SINGLE),
+    ],
+    valences=[4] * 8 + [2],
+)
+
+quinoline = _graph_structure(
+    "quinoline", ["N"] + ["C"] * 9,
+    [
+        (0, 1, BondType.SINGLE), (1, 2, BondType.DOUBLE),
+        (2, 3, BondType.SINGLE), (3, 4, BondType.DOUBLE),
+        (4, 5, BondType.SINGLE), (5, 0, BondType.DOUBLE),
+        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
+        (9, 4, BondType.SINGLE),
+    ],
+)
+
+isoquinoline = _graph_structure(
+    "isoquinoline", ["N"] + ["C"] * 9,
+    [
+        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
+        (9, 4, BondType.SINGLE),
+    ],
+)
+
+anthracene = _graph_structure(
+    "anthracene", ["C"] * 14,
+    [
+        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
+        (9, 4, BondType.SINGLE), (8, 10, BondType.SINGLE),
+        (10, 11, BondType.DOUBLE), (11, 12, BondType.SINGLE),
+        (12, 13, BondType.DOUBLE), (13, 9, BondType.SINGLE),
+    ],
+)
