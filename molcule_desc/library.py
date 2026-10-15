@@ -13,6 +13,7 @@ from .core import (
     double,
     single,
     triple,
+  ring,
 )
 
 # These are atom-topology templates, not virtual atoms. Their names describe
@@ -102,3 +103,23 @@ methanimine = _methanimine()
 carbonyl = _carbonyl()
 formaldehyde = carbonyl
 acetone = _acetone()
+
+
+def _benzene() -> Structure:
+    # Kekule representation: alternating double and single bonds around a six-membered ring.
+    chain = Structure(
+        "benzene chain",
+        [Atom(i, "C", 4) for i in range(6)],
+        [
+            Bond(0, 1, BondType.DOUBLE),
+            Bond(1, 2, BondType.SINGLE),
+            Bond(2, 3, BondType.DOUBLE),
+            Bond(3, 4, BondType.SINGLE),
+            Bond(4, 5, BondType.DOUBLE),
+        ],
+        ports={single(1): 0, single(2): 5},
+    )
+    return ring(chain, single(1), single(2), expose={}, name="benzene")
+
+
+benzene = _benzene()
