@@ -233,8 +233,18 @@ acetylene = _graph_structure(
 def _cycloalkane(size: int) -> Structure:
     if not 3 <= size <= 10:
         raise ValueError("Cycloalkane ring size must be between 3 and 10")
+    names = {
+        3: "cyclopropane",
+        4: "cyclobutane",
+        5: "cyclopentane",
+        6: "cyclohexane",
+        7: "cycloheptane",
+        8: "cyclooctane",
+        9: "cyclononane",
+        10: "cyclodecane",
+    }
     return _graph_structure(
-        f"cyclo{size}ane",
+        names[size],
         ["C"] * size,
         _cycle_edges(list(range(size)), [BondType.SINGLE] * size),
     )
