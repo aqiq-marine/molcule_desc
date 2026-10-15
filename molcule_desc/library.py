@@ -242,14 +242,6 @@ phenyl = _graph_structure(
          BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
     ),
 )
-phenylene = _graph_structure(
-    "phenylene", ["C"] * 6,
-    _cycle_edges(
-        [0, 1, 2, 3, 4, 5],
-        [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE,
-         BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
-    ),
-)
 
 # Oxygen-containing groups and common carbonyl derivatives.
 hydroxyl = _graph_structure("hydroxyl", ["O"], [])
@@ -385,5 +377,4 @@ def _biaryl(name: str, *, ether_link: bool) -> Structure:
     return _graph_structure(name, elements, edges)
 
 
-biphenyl = _biaryl("biphenyl", ether_link=False)
 diphenyl_ether = _biaryl("diphenyl_ether", ether_link=True)
