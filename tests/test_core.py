@@ -228,3 +228,12 @@ def test_library_fragments_expose_remaining_valences_as_ports():
     assert len(md.amino.ports) == 3
     assert len(md.phosphine.ports) == 3
     assert len(md.phosphate_ester.ports) == 3
+
+
+
+def test_tert_butyl_library_fragment_is_built_from_methane_units():
+    import molcule_desc as md
+
+    assert len(md.tert_butyl.ports) == 1
+    # C4H9 is the tert-butyl substituent; its single port attaches to a parent.
+    assert md.tert_butyl.formula == {"C": 4, "H": 9}
