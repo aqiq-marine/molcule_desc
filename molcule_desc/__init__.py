@@ -19,6 +19,12 @@ from .smiles import to_rdkit_mol, to_smiles
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
     acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
+    methane, ethane, propane, acetylene, cyclohexane, phenyl, phenylene,
+    hydroxyl, ether, carboxyl, ester, amino, amine, amide, nitrile, imine,
+    pyridine, pyrrole, thiophene, imidazole, naphthalene,
+    fluoro, chloro, bromo, iodo, thiol, thioether, sulfone, phosphine,
+    phosphine_oxide, phosphate_ester, methylene, ethylene_linker, ethanol,
+    biphenyl, diphenyl_ether,
 )
 
 __all__ = [
@@ -28,4 +34,11 @@ __all__ = [
     "hydrogen_single", "carbon_double_two_single", "carbon_triple_single",
     "oxygen_double", "ethylene", "methanimine",
     "carbonyl", "formaldehyde", "acetone", "benzene",
+    "methane", "ethane", "propane", "acetylene", "cyclohexane",
+    "phenyl", "phenylene", "hydroxyl", "ether", "carboxyl", "ester",
+    "amino", "amine", "amide", "nitrile", "imine", "pyridine", "pyrrole",
+    "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
+    "iodo", "thiol", "thioether", "sulfone", "phosphine",
+    "phosphine_oxide", "phosphate_ester", "methylene", "ethylene_linker",
+    "ethanol", "biphenyl", "diphenyl_ether",
 ]
