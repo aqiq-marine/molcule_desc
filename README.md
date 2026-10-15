@@ -82,9 +82,9 @@ print(XD.ports)
 ```
 
 Structures are composed with `bond(left, left_port, right, right_port, expose=...)`.
-The `expose` mapping is explicit: each result-local port points to a source port through `PortRef(0, ...)` (left input) or `PortRef(1, ...)` (right input). Compatible ports are consumed and a graph bond is added. Unexported, unconsumed ports are terminalized during composition; call `finalize()` to resolve the ports that remain exposed by the final structure.
+The `expose` mapping is explicit: each result-local port points to a source port through `PortRef(0, ...)` (left input) or `PortRef(1, ...)` (right input). Compatible ports are consumed and a graph bond is added. Unexported, unconsumed ports are terminalized during composition; call `finalize()` to resolve the ports that remain exposed by the final structure. To connect two ports in one structure, pass the same structure twice and set `intramolecular=True`.
 
-This is a small prototype, not a full cheminformatics toolkit. It currently supports common neutral valences and does not implement aromaticity, stereochemistry, formal-charge-aware valence rules, or SMILES conversion. The tests require `pytest`.
+This is a small prototype, not a full cheminformatics toolkit. It currently supports common neutral valences and does not implement aromaticity, stereochemistry, formal-charge-aware valence rules, or SMILES conversion. Install and test with `pip install -e . pytest` followed by `pytest`.
 
 ## Documentation
 
