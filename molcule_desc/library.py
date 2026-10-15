@@ -92,7 +92,6 @@ def _acetone() -> Structure:
         },
         name="acetone",
     )
-}
 
 ethylene = _ethylene()
 methanimine = _methanimine()
