@@ -131,12 +131,21 @@ def _benzene() -> Structure:
 benzene = _benzene()
 
 
-# Generic graph builder for reusable library structures. Every unused valence is
-# represented by a single-bond port, so it can either be connected to a fragment
-# or completed with hydrogen when the structure is finalized.
-_ELEMENT_VALENCES = {
-    "H": 1, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
-    "Cl": 1, "Br": 1, "I": 1, "P": 5, "S": 6,
+# Allowed valences used when choosing a default valence for library atoms.
+# These are valence/bonding capacities, not oxidation states. When a structure
+# needs a particular state (e.g. sulfone sulfur), pass it explicitly via valences.
+_ELEMENT_VALENCES: dict[str, tuple[int, ...]] = {
+    "H": (1,),
+    "B": (3,),
+    "C": (4,),
+    "N": (3, 5),
+    "O": (2,),
+    "F": (1,),
+    "Cl": (1, 3, 5, 7),
+    "Br": (1, 3, 5, 7),
+    "I": (1, 3, 5, 7),
+    "P": (3, 5),
+    "S": (2, 4, 6),
 }
 
 
@@ -148,14 +157,37 @@ def _graph_structure(
     valences: list[int] | None = None,
     formal_charges: list[int] | None = None,
 ) -> Structure:
-    """Build a graph and expose every remaining valence as a single port."""
-    atom_valences = valences or [_ELEMENT_VALENCES[element] for element in elements]
+    """Build a graph and expose remaining valences as single-bond ports.
+
+    For each atom, choose the smallest allowed valence that can accommodate
+    its existing bond-order sum. Explicit valences override this inference
+    when a particular bonding state is required by the fragment.
+    """
     charges = formal_charges or [0] * len(elements)
     used = [0] * len(elements)
     bonds = [Bond(start, end, order) for start, end, order in edges]
     for edge in bonds:
         used[edge.start] += edge.order.value
         used[edge.end] += edge.order.value
+
+    if valences is not None:
+        if len(valences) != len(elements):
+            raise ValueError("valences must have one entry per atom")
+        atom_valences = list(valences)
+    else:
+        atom_valences = []
+        for atom_id, element in enumerate(elements):
+            allowed = _ELEMENT_VALENCES.get(element)
+            if allowed is None:
+                raise ValueError(f"No allowed valences configured for element {element!r}")
+            candidates = [value for value in allowed if value >= used[atom_id]]
+            if not candidates:
+                raise ValueError(
+                    f"Invalid library structure {name!r}: atom {atom_id} ({element}) "
+                    f"uses bond-order sum {used[atom_id]}, but allowed valences are {allowed}"
+                )
+            atom_valences.append(min(candidates))
+
     atoms = [
         Atom(i, element, atom_valences[i], charges[i])
         for i, element in enumerate(elements)
