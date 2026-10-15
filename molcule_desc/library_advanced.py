@@ -59,7 +59,7 @@ def _tetralol() -> Structure:
         ["C"] * 10 + ["O"],
         [
             (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-            (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+            (2, 3, BondType.SINGLE), (3, 4, BondType.DOUBLE),
             (4, 5, BondType.SINGLE), (5, 0, BondType.DOUBLE),
             (5, 6, BondType.SINGLE), (6, 7, BondType.SINGLE),
             (7, 8, BondType.SINGLE), (8, 9, BondType.SINGLE),
