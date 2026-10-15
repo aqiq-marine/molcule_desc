@@ -373,6 +373,73 @@ def _connect(
 
 
 
+def substitute(
+    host: Structure,
+    substitutions: Mapping[Port, tuple[Structure, Port]],
+    *,
+    name: str | None = None,
+) -> Structure:
+    """Replace multiple exposed host ports with guest structures.
+
+    substitutions maps each original host port to a (guest, guest_port) pair.
+    Each guest is connected through its selected port. Unused ports on the
+    host and guests remain exposed across intermediate substitutions.
+
+    Host port keys always refer to the original host structure.
+    """
+    if not substitutions:
+        return Structure(name or host.name, host.atoms.values(), host.bonds, host.ports)
+
+    missing = set(substitutions) - set(host.ports)
+    if missing:
+        raise ValueError(f"Host has no exposed ports: {sorted(missing, key=repr)}")
+
+    current = host
+    host_port_map: dict[Port, Port] = {port: port for port in host.ports}
+
+    for step, (original_port, (guest, guest_port)) in enumerate(
+        substitutions.items(), start=1
+    ):
+        if original_port not in host_port_map:
+            raise ValueError(f"Host port {original_port} has already been substituted")
+        current_port = host_port_map[original_port]
+        if guest_port not in guest.ports:
+            raise ValueError(f"{guest.name} has no exposed port {guest_port}")
+
+        next_index: dict[BondType, int] = {}
+        expose: dict[Port, PortRef] = {}
+        new_host_port_map: dict[Port, Port] = {}
+
+        def publish(source: int, old_port: Port) -> Port:
+            index = next_index.get(old_port.bond, 1)
+            next_index[old_port.bond] = index + 1
+            new_port = Port(old_port.bond, index)
+            expose[new_port] = PortRef(source, old_port)
+            return new_port
+
+        for original, old_port in host_port_map.items():
+            if original == original_port:
+                continue
+            new_host_port_map[original] = publish(0, old_port)
+
+        for old_port in guest.ports:
+            if old_port != guest_port:
+                publish(1, old_port)
+
+        current = bond(
+            current,
+            current_port,
+            guest,
+            guest_port,
+            expose=expose,
+            name=name if step == len(substitutions) else f"{host.name} substitution {step}",
+        )
+        host_port_map = new_host_port_map
+
+    current.name = name or f"{host.name} substituted"
+    return current
+
+
 def ring(
     structure: Structure,
     first_port: Port,
