@@ -48,7 +48,7 @@ def _binol(name: str, substituents: dict[int, str] | None = None) -> Structure:
     """Build a BINOL scaffold, optionally substituting numbered ring carbons.
 
     Substituent keys are graph atom indices: 2/12 are the 3,3'-positions,
-    while 7/17 are the corresponding outer-ring positions in this topology.
+    while 8/18 are the 6,6'-positions in this topology.
     Supported substituents are Br, I, and methyl (C).
     """
     substituents = substituents or {}
@@ -83,5 +83,5 @@ def _binol(name: str, substituents: dict[int, str] | None = None) -> Structure:
 binol = _binol("BINOL")
 binol_3_3_dibromo = _binol("3,3'-dibromo-BINOL", {2: "Br", 12: "Br"})
 binol_3_3_diiodo = _binol("3,3'-diiodo-BINOL", {2: "I", 12: "I"})
-binol_6_6_dibromo = _binol("6,6'-dibromo-BINOL", {7: "Br", 17: "Br"})
+binol_6_6_dibromo = _binol("6,6'-dibromo-BINOL", {8: "Br", 18: "Br"})
 binol_3_3_dimethyl = _binol("3,3'-dimethyl-BINOL", {2: "C", 12: "C"})
