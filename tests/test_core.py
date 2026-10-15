@@ -45,7 +45,7 @@ def test_ported_atom_wraps_an_atom_with_attachment_ports():
     assert set(template.ports) == {double(1), single(1), single(2)}
 
 
-def test_ethylene_is_built_by_connecting_two_xd_fragments():
+def test_ethylene_is_built_by_connecting_two_carbon_topologies():
     molecule = ethylene.finalize()
     assert molecule.formula == {"C": 2, "H": 4}
     assert molecule.ports == {}
@@ -58,7 +58,7 @@ def test_methanimine_is_built_by_connecting_c_and_n_double_ports():
     assert any(edge.order is BondType.DOUBLE for edge in molecule.bonds)
 
 
-def test_formaldehyde_is_built_by_connecting_xd_and_xo():
+def test_formaldehyde_is_built_by_connecting_carbon_and_oxygen_topologies():
     molecule = formaldehyde.finalize()
     assert molecule.formula == {"C": 1, "H": 2, "O": 1}
     assert any(edge.order is BondType.DOUBLE for edge in molecule.bonds)
