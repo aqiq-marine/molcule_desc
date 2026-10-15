@@ -261,3 +261,22 @@ def test_substitute_rejects_unknown_host_port():
 
     with pytest.raises(ValueError, match="Host has no exposed ports"):
         substitute(benzene, {single(99): (methane, single(1))})
+
+
+
+def test_substitute_allows_explicit_expose_mapping():
+    from molcule_desc import methane, substitute
+
+    result = substitute(
+        benzene,
+        {
+            single(1): (methane, single(1)),
+            single(4): (methane, single(1)),
+        },
+        expose={
+            single(1): (0, single(2)),
+            single(2): (1, single(2)),
+        },
+    )
+    assert set(result.ports) == {single(1), single(2)}
+    assert len(result.ports) == 2
