@@ -16,9 +16,9 @@ from .core import (
     triple,
 )
 from .smiles import to_rdkit_mol, to_smiles
-from .library import (
+from .library_advanced import tert_butyl\nfrom .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
-    acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine, tert_butyl,
+    acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
     methane, ethane, propane, acetylene, cyclohexane, phenyl, phenylene,
     hydroxyl, ether, carboxyl, ester, amino, amine, amide, nitrile, imine,
     pyridine, pyrrole, thiophene, imidazole, naphthalene,
