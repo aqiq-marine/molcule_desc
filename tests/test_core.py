@@ -100,17 +100,16 @@ def test_terminal_templates_finalize_to_expected_formulas():
     assert carbon_double_two_single.finalize().formula == {"C": 2, "H": 4}
 
 
-def test_intramolecular_bond_closes_ports_without_duplicating_graph():
+def test_ring_closes_ports_without_duplicating_graph():
     chain = Structure(
         "chain",
         [Atom(0, "C", 4), Atom(1, "C", 4)],
         [Bond(0, 1, BondType.SINGLE)],
         {single(1): 0, single(2): 1},
     )
-    closed = bond(
-        chain, single(1), chain, single(2),
+    closed = ring(
+        chain, single(1), single(2),
         expose={},
-        intramolecular=True,
     )
     assert len(closed.atoms) == 2
     assert len(closed.bonds) == 2
@@ -132,3 +131,23 @@ def test_ring_closes_two_ports_on_the_same_structure():
     assert len(cyclic.atoms) == 3
     assert len(cyclic.bonds) == 3
     assert cyclic.ports == {}
+
+
+
+def test_ring_exports_remaining_ports_without_port_refs():
+    chain = Structure(
+        "chain",
+        [Atom(0, "C", 4), Atom(1, "C", 4), Atom(2, "C", 4)],
+        [
+            Bond(0, 1, BondType.SINGLE),
+            Bond(1, 2, BondType.SINGLE),
+        ],
+        {single(1): 0, single(2): 2, single(3): 1},
+    )
+    cyclic = ring(
+        chain,
+        single(1),
+        single(2),
+        expose={single(1): single(3)},
+    )
+    assert cyclic.ports == {single(1): 1}
