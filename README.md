@@ -94,7 +94,15 @@ print(hydrogen_single.ports)
 Structures are composed with `bond(left, left_port, right, right_port, expose=...)` for connecting two structures, and `ring(structure, first_port, second_port, expose=...)` for connecting two ports on one structure.
 The `expose` mapping is explicit: each result-local port points to a source port through `PortRef(0, ...)` (left input) or `PortRef(1, ...)` (right input). Compatible ports are consumed and a graph bond is added. Unexported, unconsumed ports are terminalized during composition; call `finalize()` to resolve the ports that remain exposed by the final structure. To connect two ports in one structure, use `ring(structure, port1, port2, expose=...)`. Its `expose` mapping maps each result-local port directly to an existing port on that structure, so `PortRef` is not needed.
 
-This is a small prototype, not a full cheminformatics toolkit. It currently supports common neutral valences and does not implement aromaticity, stereochemistry, formal-charge-aware valence rules, or SMILES conversion. Install and test with `pip install -e . pytest` followed by `pytest`.
+This is a small prototype, not a full cheminformatics toolkit. It currently supports common valences and does not implement aromaticity or stereochemistry in its own graph model. Optional RDKit integration converts structures to SMILES:
+
+```python
+from molcule_desc import acetone, to_smiles
+
+print(to_smiles(acetone))  # CC(C)=O
+```
+
+Install RDKit integration with `pip install -e '.[chemistry]'`, then run tests with `pip install -e . pytest` followed by `pytest`. The converter finalizes exposed ports by default, sanitizes the RDKit molecule, and emits canonical SMILES by default. Aromaticity and stereochemistry are not inferred by the converter.
 
 ## Documentation
 
