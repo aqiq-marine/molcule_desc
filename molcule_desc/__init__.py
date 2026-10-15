@@ -17,16 +17,16 @@ from .core import (
     triple,
 )
 from .smiles import to_rdkit_mol, to_smiles
-from .library_advanced import tert_butyl
+from .library_advanced import biphenyl, tert_butyl
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
     acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
-    methane, ethane, propane, acetylene, cyclohexane, phenyl, phenylene,
+    methane, ethane, propane, acetylene, cyclohexane, phenyl,
     hydroxyl, ether, carboxyl, ester, amino, amine, amide, nitrile, imine,
     pyridine, pyrrole, thiophene, imidazole, naphthalene,
     fluoro, chloro, bromo, iodo, thiol, thioether, sulfone, phosphine,
     phosphine_oxide, phosphate_ester, methylene, ethylene_linker, ethanol,
-    biphenyl, diphenyl_ether,
+    diphenyl_ether,
 )
 
 __all__ = [
@@ -37,7 +37,7 @@ __all__ = [
     "oxygen_double", "ethylene", "methanimine",
     "carbonyl", "formaldehyde", "acetone", "benzene", "tert_butyl",
     "methane", "ethane", "propane", "acetylene", "cyclohexane",
-    "phenyl", "phenylene", "hydroxyl", "ether", "carboxyl", "ester",
+    "phenyl", "hydroxyl", "ether", "carboxyl", "ester",
     "amino", "amine", "amide", "nitrile", "imine", "pyridine", "pyrrole",
     "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
     "iodo", "thiol", "thioether", "sulfone", "phosphine",
