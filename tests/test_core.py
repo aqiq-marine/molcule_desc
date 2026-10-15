@@ -29,6 +29,17 @@ def test_dummy_templates_have_expected_ports():
     assert set(XO.ports) == {double(1)}
 
 
+def test_bare_atom_has_no_ports():
+    atom = Structure.atom("C", name="bare carbon")
+    assert atom.formula == {"C": 1}
+    assert atom.ports == {}
+
+
+def test_ported_atom_declares_attachment_ports():
+    template = Structure.ported_atom("C", [double(1), single(1), single(2)])
+    assert set(template.ports) == {double(1), single(1), single(2)}
+
+
 def test_ethylene_is_built_by_connecting_two_xd_fragments():
     molecule = ethylene.finalize()
     assert molecule.formula == {"C": 2, "H": 4}
@@ -59,8 +70,8 @@ def test_carbonyl_fragment_exposes_two_single_ports():
 
 
 def test_mismatched_bond_types_are_rejected():
-    left = Structure.atom("C", [single(1)])
-    right = Structure.atom("O", [double(1)])
+    left = Structure.ported_atom("C", [single(1)])
+    right = Structure.ported_atom("O", [double(1)])
     with pytest.raises(ValueError, match="Bond types do not match"):
         bond(
             left, single(1), right, double(1),
@@ -69,8 +80,8 @@ def test_mismatched_bond_types_are_rejected():
 
 
 def test_consumed_port_cannot_be_published():
-    left = Structure.atom("C", [single(1), single(2)])
-    right = Structure.atom("C", [single(1)])
+    left = Structure.ported_atom("C", [single(1), single(2)])
+    right = Structure.ported_atom("C", [single(1)])
     with pytest.raises(ValueError, match="Cannot expose consumed port"):
         bond(
             left, single(1), right, single(1),
