@@ -299,14 +299,18 @@ phosphine_oxide = _graph_structure(
     "phosphine_oxide", ["P", "O"], [(0, 1, BondType.DOUBLE)]
 )
 phosphate_ester = _graph_structure(
-    "phosphate_ester", ["P", "O", "O", "O"],
+    "phosphate_ester", ["P", "O", "O", "O", "O"],
     [(0, 1, BondType.DOUBLE), (0, 2, BondType.SINGLE),
-     (0, 3, BondType.SINGLE)],
+     (0, 3, BondType.SINGLE), (0, 4, BondType.SINGLE)],
     valences=[5, 2, 2, 2],
 )
 
 # Linkers and biaryl examples.
 methylene = _graph_structure("methylene", ["C"], [])
+ethanol = _graph_structure(
+    "ethanol", ["C", "C", "O"],
+    [(0, 1, BondType.SINGLE), (1, 2, BondType.SINGLE)],
+)
 ethylene_linker = _graph_structure(
     "ethylene_linker", ["C", "C"], [(0, 1, BondType.SINGLE)]
 )
