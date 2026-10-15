@@ -290,3 +290,35 @@ def test_library_supports_elements_with_multiple_allowed_valences():
     assert len(md.phosphine.ports) == 3
     assert len(md.phosphine_oxide.ports) == 3
     assert len(md.sulfone.ports) == 2
+
+
+
+def test_binol_scaffolds_have_expected_formulas():
+    import molcule_desc as md
+
+    expected = {
+        "binol": "C20H14O2",
+        "binol_3_3_dibromo": "C20H12Br2O2",
+        "binol_3_3_diiodo": "C20H12I2O2",
+        "binol_6_6_dibromo": "C20H12Br2O2",
+        "binol_3_3_dimethyl": "C22H18O2",
+    }
+    for name, formula in expected.items():
+        molecule = getattr(md, name).finalize()
+        assert molecule.formula_string() == formula
+        assert molecule.ports == {}
+
+
+def test_binol_scaffolds_convert_to_valid_smiles():
+    pytest.importorskip("rdkit")
+    import molcule_desc as md
+
+    for name in (
+        "binol",
+        "binol_3_3_dibromo",
+        "binol_3_3_diiodo",
+        "binol_6_6_dibromo",
+        "binol_3_3_dimethyl",
+    ):
+        smiles = to_smiles(getattr(md, name))
+        assert smiles
