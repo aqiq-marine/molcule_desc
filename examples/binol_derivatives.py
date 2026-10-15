@@ -31,12 +31,12 @@ def _derivative(name: str, substituents: dict[int, str]) -> Structure:
     return result
 
 
-binol_3_3_dibromo = _derivative("3,3'-dibromo-BINOL", {2: "Br", 13: "Br"})
-binol_3_3_diiodo = _derivative("3,3'-diiodo-BINOL", {2: "I", 13: "I"})
-binol_6_6_dibromo = _derivative("6,6'-dibromo-BINOL", {8: "Br", 19: "Br"})
-binol_3_3_dimethyl = _derivative("3,3'-dimethyl-BINOL", {2: "Me", 13: "Me"})
-binol_6_6_di_tert_butyl = _derivative("6,6'-di-tert-butyl-BINOL", {8: "tBu", 19: "tBu"})
-binol_6_6_diphenyl = _derivative("6,6'-diphenyl-BINOL", {8: "phenyl", 19: "phenyl"})
+binol_3_3_dibromo = _derivative("3,3'-dibromo-BINOL", {3: "Br", 14: "Br"})
+binol_3_3_diiodo = _derivative("3,3'-diiodo-BINOL", {3: "I", 14: "I"})
+binol_6_6_dibromo = _derivative("6,6'-dibromo-BINOL", {7: "Br", 18: "Br"})
+binol_3_3_dimethyl = _derivative("3,3'-dimethyl-BINOL", {3: "Me", 14: "Me"})
+binol_6_6_di_tert_butyl = _derivative("6,6'-di-tert-butyl-BINOL", {7: "tBu", 18: "tBu"})
+binol_6_6_diphenyl = _derivative("6,6'-diphenyl-BINOL", {7: "phenyl", 18: "phenyl"})
 
 
 def _compose_binaphthyl_base() -> Structure:
