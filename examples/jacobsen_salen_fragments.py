@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from molcule_desc import (
-    Port, PortRef, Structure, bond, methane, benzene, hydroxyl, methanimine,
+    Port, PortRef, Structure, bond, benzene, hydroxyl, imine, tert_butyl,
     cyclohexane, single, to_smiles,
 )
 
@@ -61,30 +61,6 @@ def attach(
     return Fragment(combined, new_names)
 
 
-def carbon_fragment(name: str = "carbon") -> Fragment:
-    """A carbon atom with four named single-bond attachment ports."""
-    from molcule_desc import atom, ported_atom
-
-    structure = ported_atom(
-        atom("C", 4),
-        [single(i) for i in range(1, 5)],
-        name=name,
-    )
-    return Fragment(structure, {f"p{i}": single(i) for i in range(1, 5)})
-
-
-def tert_butyl() -> Fragment:
-    """Build tert-butyl from one central carbon and three methyl carbon fragments."""
-    result = carbon_fragment("tert-butyl central carbon")
-    # Three carbon fragments each consume one port of the central carbon;
-    # the remaining ports become the three methyl groups' C-H valences.
-    for i in range(3):
-        methyl = carbon_fragment(f"tert-butyl methyl {i + 1}")
-        result = attach(result, f"p{i + 1}", methyl, "p1", name="tert-butyl")
-    result.ports = {"attachment": result.ports["p4"]}
-    return result
-
-
 def salicylidene_half() -> Fragment:
     """Build one 3,5-di-tert-butylsalicylidene half from ring and group fragments."""
     result = Fragment(
@@ -92,12 +68,12 @@ def salicylidene_half() -> Fragment:
         {f"aryl{i}": single(i) for i in range(1, 7)},
     )
     # Position aliases are local to this chosen benzene port convention.
-    result = attach(result, "aryl3", tert_butyl(), "attachment", name="aryl tert-butyl")
+    result = attach(result, "aryl3", Fragment(tert_butyl, {"attachment": single(1)}), "attachment", name="aryl tert-butyl")
     # Resolve aliases from the returned mapping; labels for unconsumed ports survive.
     result = attach(result, "aryl5", tert_butyl(), "attachment", name="di-tert-butyl aryl")
     result = attach(result, "aryl2", Fragment(hydroxyl, {"attachment": single(1), "hydrogen": single(2)}),
                     "attachment", name="salicylidene phenol")
-    result = attach(result, "aryl1", Fragment(methanimine, {
+    result = attach(result, "aryl1", Fragment(imine, {
         "imine_carbon_a": single(1),
         "imine_carbon_b": single(2),
         "nitrogen": single(3),
