@@ -7,6 +7,8 @@ from .core import (
     Port,
     PortRef,
     Structure,
+    atom,
+    ported_atom,
     bond,
     double,
     single,
@@ -18,7 +20,7 @@ from .library import (
 
 __all__ = [
     "Atom", "Bond", "BondType", "Port", "PortRef", "Structure",
-    "bond", "single", "double", "triple",
+    "atom", "ported_atom", "bond", "single", "double", "triple",
     "XS", "XD", "XT", "XO", "ethylene", "methanimine",
     "carbonyl", "formaldehyde", "acetone",
 ]
