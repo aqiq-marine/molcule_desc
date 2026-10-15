@@ -75,8 +75,8 @@ def test_carbonyl_fragment_exposes_two_single_ports():
 
 
 def test_mismatched_bond_types_are_rejected():
-    left = ported_atom("C", [single(1)])
-    right = ported_atom("O", [double(1)])
+    left = ported_atom(atom("C", 4), [single(1)])
+    right = ported_atom(atom("O", 2), [double(1)])
     with pytest.raises(ValueError, match="Bond types do not match"):
         bond(
             left, single(1), right, double(1),
@@ -85,8 +85,8 @@ def test_mismatched_bond_types_are_rejected():
 
 
 def test_consumed_port_cannot_be_published():
-    left = ported_atom("C", [single(1), single(2)])
-    right = ported_atom("C", [single(1)])
+    left = ported_atom(atom("C", 4), [single(1), single(2)])
+    right = ported_atom(atom("C", 4), [single(1)])
     with pytest.raises(ValueError, match="Cannot expose consumed port"):
         bond(
             left, single(1), right, single(1),
