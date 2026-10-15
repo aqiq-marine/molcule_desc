@@ -3,7 +3,7 @@
 These structures are examples, not part of the public built-in library. The
 atom indices below refer to the current two-naphthol composition.
 """
-from molcule_desc.core import BondType, Port, Structure, single, substitute
+from molcule_desc.core import Port, Structure, single, substitute
 from molcule_desc.library import (
     bromo, carbonyl, imine, iodo, methane, naphthalene, phenyl, pyridine,
     _graph_structure,
@@ -65,17 +65,9 @@ def _attach_preserving_guest_port(
     return result, new_anchor
 
 
-def _pyrimidine_fragment() -> Structure:
-    """Pyrimidine with a port at C2."""
-    return _graph_structure("pyrimidine", ["N", "C", "N", "C", "C", "C"], [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-    ])
-
 
 def _bis_imine(amine: str) -> Structure:
-    heteroaromatic = pyridine if amine == "2-aminopyridine" else _pyrimidine_fragment()
+    heteroaromatic = pyridine if amine == "2-aminopyridine" else pyrimidine
     result = _compose_binaphthyl_base()
     for position in (2, 13):
         result, imine_n = _attach_preserving_guest_port(
