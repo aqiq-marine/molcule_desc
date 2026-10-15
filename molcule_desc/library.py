@@ -132,3 +132,207 @@ def _benzene() -> Structure:
 
 
 benzene = _benzene()
+
+
+# Generic graph builder for reusable library structures. Every unused valence is
+# represented by a single-bond port, so it can either be connected to a fragment
+# or completed with hydrogen when the structure is finalized.
+_ELEMENT_VALENCES = {
+    "H": 1, "B": 3, "C": 4, "N": 3, "O": 2, "F": 1,
+    "Cl": 1, "Br": 1, "I": 1, "P": 5, "S": 6,
+}
+
+
+def _graph_structure(
+    name: str,
+    elements: list[str],
+    edges: list[tuple[int, int, BondType]],
+    *,
+    valences: list[int] | None = None,
+    formal_charges: list[int] | None = None,
+) -> Structure:
+    """Build a graph and expose every remaining valence as a single port."""
+    atom_valences = valences or [_ELEMENT_VALENCES[element] for element in elements]
+    charges = formal_charges or [0] * len(elements)
+    used = [0] * len(elements)
+    bonds = [Bond(start, end, order) for start, end, order in edges]
+    for edge in bonds:
+        used[edge.start] += edge.order.value
+        used[edge.end] += edge.order.value
+    atoms = [
+        Atom(i, element, atom_valences[i], charges[i])
+        for i, element in enumerate(elements)
+    ]
+    ports: dict[Port, int] = {}
+    port_index = 1
+    for atom_id, valence in enumerate(atom_valences):
+        remaining = valence - used[atom_id]
+        if remaining < 0:
+            raise ValueError(
+                f"Invalid library structure {name!r}: atom {atom_id} "
+                f"uses valence {used[atom_id]} > {valence}"
+            )
+        for _ in range(remaining):
+            ports[single(port_index)] = atom_id
+            port_index += 1
+    return Structure(name, atoms, bonds, ports)
+
+
+def _cycle_edges(
+    atom_ids: list[int],
+    orders: list[BondType],
+) -> list[tuple[int, int, BondType]]:
+    return [
+        (atom_ids[i], atom_ids[(i + 1) % len(atom_ids)], orders[i])
+        for i in range(len(atom_ids))
+    ]
+
+
+# Saturated and unsaturated hydrocarbon skeletons.
+methane = _graph_structure("methane", ["C"], [])
+ethane = _graph_structure("ethane", ["C", "C"], [(0, 1, BondType.SINGLE)])
+propane = _graph_structure(
+    "propane", ["C", "C", "C"],
+    [(0, 1, BondType.SINGLE), (1, 2, BondType.SINGLE)],
+)
+acetylene = _graph_structure(
+    "acetylene", ["C", "C"], [(0, 1, BondType.TRIPLE)]
+)
+cyclohexane = _graph_structure(
+    "cyclohexane", ["C"] * 6,
+    _cycle_edges([0, 1, 2, 3, 4, 5], [BondType.SINGLE] * 6),
+)
+
+# These ring structures expose all substitutable positions. Consume one port
+# for a phenyl substituent, or two ports for a phenylene linker.
+phenyl = benzene
+phenylene = benzene
+
+# Oxygen-containing groups and common carbonyl derivatives.
+hydroxyl = _graph_structure("hydroxyl", ["O"], [])
+ether = _graph_structure(
+    "ether", ["C", "O", "C"],
+    [(0, 1, BondType.SINGLE), (1, 2, BondType.SINGLE)],
+)
+carboxyl = _graph_structure(
+    "carboxyl", ["C", "O", "O"],
+    [(0, 1, BondType.DOUBLE), (0, 2, BondType.SINGLE)],
+)
+ester = _graph_structure(
+    "ester", ["C", "O", "O", "C"],
+    [(0, 1, BondType.DOUBLE), (0, 2, BondType.SINGLE),
+     (2, 3, BondType.SINGLE)],
+)
+
+# Nitrogen-containing groups.
+amino = _graph_structure("amino", ["N"], [])
+amine = _graph_structure("amine", ["C", "N"], [(0, 1, BondType.SINGLE)])
+amide = _graph_structure(
+    "amide", ["C", "O", "N"],
+    [(0, 1, BondType.DOUBLE), (0, 2, BondType.SINGLE)],
+)
+nitrile = _graph_structure(
+    "nitrile", ["C", "N"], [(0, 1, BondType.TRIPLE)]
+)
+imine = _graph_structure("imine", ["C", "N"], [(0, 1, BondType.DOUBLE)])
+
+# Aromatic rings are represented by Kekule graphs; RDKit perceives aromaticity
+# when converting a completed structure to SMILES.
+pyridine = _graph_structure(
+    "pyridine", ["N", "C", "C", "C", "C", "C"],
+    _cycle_edges(
+        [0, 1, 2, 3, 4, 5],
+        [BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE,
+         BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE],
+    ),
+)
+pyrrole = _graph_structure(
+    "pyrrole", ["N", "C", "C", "C", "C"],
+    _cycle_edges(
+        [0, 1, 2, 3, 4],
+        [BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE,
+         BondType.DOUBLE, BondType.SINGLE],
+    ),
+)
+thiophene = _graph_structure(
+    "thiophene", ["S", "C", "C", "C", "C"],
+    _cycle_edges(
+        [0, 1, 2, 3, 4],
+        [BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE,
+         BondType.DOUBLE, BondType.SINGLE],
+    ),
+)
+imidazole = _graph_structure(
+    "imidazole", ["N", "C", "N", "C", "C"],
+    [(0, 1, BondType.SINGLE), (1, 2, BondType.DOUBLE),
+     (2, 3, BondType.SINGLE), (3, 4, BondType.DOUBLE),
+     (4, 0, BondType.SINGLE)],
+)
+naphthalene = _graph_structure(
+    "naphthalene", ["C"] * 10,
+    [(0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
+     (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
+     (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
+     (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
+     (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
+     (9, 4, BondType.SINGLE)],
+)
+
+# Halogen substituents.
+fluoro = _graph_structure("fluoro", ["F"], [])
+chloro = _graph_structure("chloro", ["Cl"], [])
+bromo = _graph_structure("bromo", ["Br"], [])
+iodo = _graph_structure("iodo", ["I"], [])
+
+# Sulfur- and phosphorus-containing groups.
+thiol = _graph_structure("thiol", ["S"], [])
+thioether = _graph_structure(
+    "thioether", ["C", "S", "C"],
+    [(0, 1, BondType.SINGLE), (1, 2, BondType.SINGLE)],
+)
+sulfone = _graph_structure(
+    "sulfone", ["S", "O", "O"],
+    [(0, 1, BondType.DOUBLE), (0, 2, BondType.DOUBLE)],
+)
+phosphine = _graph_structure("phosphine", ["P"], [])
+phosphine_oxide = _graph_structure(
+    "phosphine_oxide", ["P", "O"], [(0, 1, BondType.DOUBLE)]
+)
+phosphate_ester = _graph_structure(
+    "phosphate_ester", ["P", "O", "O", "O"],
+    [(0, 1, BondType.DOUBLE), (0, 2, BondType.SINGLE),
+     (0, 3, BondType.SINGLE)],
+    valences=[5, 2, 2, 2],
+)
+
+# Linkers and biaryl examples.
+methylene = _graph_structure("methylene", ["C"], [])
+ethylene_linker = _graph_structure(
+    "ethylene_linker", ["C", "C"], [(0, 1, BondType.SINGLE)]
+)
+
+
+def _biaryl(name: str, *, ether_link: bool) -> Structure:
+    elements = ["C"] * 12
+    edges = (
+        _cycle_edges(
+            [0, 1, 2, 3, 4, 5],
+            [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE,
+             BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
+        )
+        + _cycle_edges(
+            [6, 7, 8, 9, 10, 11],
+            [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE,
+             BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
+        )
+    )
+    if ether_link:
+        elements.append("O")
+        edges.extend([(0, 12, BondType.SINGLE), (6, 12, BondType.SINGLE)])
+    else:
+        edges.append((0, 6, BondType.SINGLE))
+    return _graph_structure(name, elements, edges)
+
+
+biphenyl = _biaryl("biphenyl", ether_link=False)
+diphenyl_ether = _biaryl("diphenyl_ether", ether_link=True)
