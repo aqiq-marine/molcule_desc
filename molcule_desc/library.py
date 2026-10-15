@@ -163,7 +163,6 @@ def _tert_butyl() -> Structure:
     )
 
 
-tert_butyl = _tert_butyl()
 
 
 def _benzene() -> Structure:
@@ -251,6 +250,7 @@ def _cycle_edges(
 
 # Saturated and unsaturated hydrocarbon skeletons.
 methane = _graph_structure("methane", ["C"], [])
+tert_butyl = _tert_butyl()
 ethane = _graph_structure("ethane", ["C", "C"], [(0, 1, BondType.SINGLE)])
 propane = _graph_structure(
     "propane", ["C", "C", "C"],
