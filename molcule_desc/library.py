@@ -106,7 +106,10 @@ acetone = _acetone()
 
 
 def _benzene() -> Structure:
-    # Kekule representation: alternating double and single bonds around a six-membered ring.
+    # Kekule representation with one exposed single-bond port for each C-H bond.
+    # Ports 1 and 2 close the ring; ports 3-8 represent the six hydrogens.
+    ports = {single(1): 0, single(2): 5}
+    ports.update({single(i + 3): i for i in range(6)})
     chain = Structure(
         "benzene chain",
         [Atom(i, "C", 4) for i in range(6)],
@@ -117,9 +120,15 @@ def _benzene() -> Structure:
             Bond(3, 4, BondType.SINGLE),
             Bond(4, 5, BondType.DOUBLE),
         ],
-        ports={single(1): 0, single(2): 5},
+        ports=ports,
     )
-    return ring(chain, single(1), single(2), expose={}, name="benzene")
+    return ring(
+        chain,
+        single(1),
+        single(2),
+        expose={single(i + 1): single(i + 3) for i in range(6)},
+        name="benzene",
+    )
 
 
 benzene = _benzene()
