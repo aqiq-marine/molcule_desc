@@ -280,3 +280,13 @@ def test_substitute_allows_explicit_expose_mapping():
     )
     assert set(result.ports) == {single(1), single(2)}
     assert len(result.ports) == 2
+
+
+
+def test_library_supports_elements_with_multiple_allowed_valences():
+    import molcule_desc as md
+
+    # Explicitly selected higher-valence states retain the intended ports.
+    assert len(md.phosphine.ports) == 3
+    assert len(md.phosphine_oxide.ports) == 3
+    assert len(md.sulfone.ports) == 2
