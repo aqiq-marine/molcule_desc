@@ -51,15 +51,15 @@ def _tetralol() -> Structure:
 
     Atom numbering follows the naphthol fragment: the hydroxyl-bearing
     aromatic ring is atoms 0-5; atoms 4-5 is the shared fused bond. The
-    opposite ring is hydrogenated by making its two non-fused double bonds
-    single and changing the Kekule pattern on the aromatic ring.
+    phenolic ring keeps its aromatic Kekule pattern. The opposite ring is
+    hydrogenated by changing its non-fused bonds to single bonds.
     """
     return _graph_structure(
         "tetralol",
         ["C"] * 10 + ["O"],
         [
             (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-            (2, 3, BondType.SINGLE), (3, 4, BondType.DOUBLE),
+            (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
             (4, 5, BondType.SINGLE), (5, 0, BondType.DOUBLE),
             (5, 6, BondType.SINGLE), (6, 7, BondType.SINGLE),
             (7, 8, BondType.SINGLE), (8, 9, BondType.SINGLE),
