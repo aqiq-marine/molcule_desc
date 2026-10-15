@@ -1,7 +1,9 @@
 """Higher-level reusable fragments composed from basic library structures."""
 
 from .core import Structure, single, substitute
-from .library import methane, phenyl
+from .library import (
+    bromo, carbonyl, imine, iodo, methane, naphthalene, naphthol, phenyl, pyridine,
+)
 
 
 def _tert_butyl() -> Structure:
@@ -44,69 +46,81 @@ from .core import Bond, BondType
 from .library import _graph_structure
 
 
-def _binol(name: str, substituents: dict[int, str] | None = None) -> Structure:
-    """Build a BINOL scaffold, optionally substituting numbered ring carbons.
+def _port_at_atom(structure: Structure, atom_id: int) -> Port:
+    """Return an exposed single-bond port anchored to a specified atom."""
+    for port, anchor in structure.ports.items():
+        if anchor == atom_id:
+            return port
+    raise ValueError(f"{structure.name} has no exposed port on atom {atom_id}")
 
-    Substituent keys are graph atom indices: 2/12 are the 3,3'-positions,
-    while 8/18 are the 6,6'-positions in this topology.
-    Supported substituents are Br, I, methyl (C), tert-butyl (tBu), and phenyl.
+
+def _compose_binol_base() -> Structure:
+    """Compose BINOL from two naphthol fragments joined at their 1-positions.
+
+    In the naphthol fragment, atom 1 is the biaryl attachment position and
+    atom 2 bears OH. The two fragments are joined through atom 1, leaving
+    their remaining ports available for further substitution.
     """
-    substituents = substituents or {}
-    elements = ["C"] * 20 + ["O", "O"]
-    edges = [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
-        (9, 4, BondType.SINGLE),
-        (10, 11, BondType.DOUBLE), (11, 12, BondType.SINGLE),
-        (12, 13, BondType.DOUBLE), (13, 14, BondType.SINGLE),
-        (14, 15, BondType.DOUBLE), (15, 10, BondType.SINGLE),
-        (15, 16, BondType.SINGLE), (16, 17, BondType.DOUBLE),
-        (17, 18, BondType.SINGLE), (18, 19, BondType.DOUBLE),
-        (19, 14, BondType.SINGLE),
-        (0, 10, BondType.SINGLE),
-        (1, 20, BondType.SINGLE), (11, 21, BondType.SINGLE),
-    ]
-    for atom_id, substituent in substituents.items():
-        if atom_id not in range(20):
-            raise ValueError(f"Invalid BINOL ring atom index: {atom_id}")
-        if substituent not in {"Br", "I", "C", "tBu", "phenyl"}:
+    join_port = _port_at_atom(naphthol, 1)
+    return substitute(
+        naphthol,
+        {join_port: (naphthol, join_port)},
+        name="BINOL",
+    )
+
+
+def _replace_with_fragment(
+    host: Structure,
+    anchor_atom: int,
+    guest: Structure,
+    *,
+    name: str,
+) -> Structure:
+    """Attach a guest fragment at a host atom and cap all guest-side spare ports."""
+    host_port = _port_at_atom(host, anchor_atom)
+    expose = {
+        single(index): (0, port)
+        for index, port in enumerate(
+            (p for p in host.ports if p != host_port), start=1
+        )
+    }
+    return substitute(
+        host,
+        {host_port: (guest, _port_at_atom(guest, next(iter(guest.ports.values()))))},
+        expose=expose,
+        name=name,
+    )
+
+
+def _binol(name: str, substituents: dict[int, str] | None = None) -> Structure:
+    """Build BINOL and derivatives compositionally from reusable fragments.
+
+    Substituent keys are atom indices in the composed two-naphthol scaffold.
+    Supported substituents: Br, I, methyl (C), tert-butyl (tBu), and phenyl.
+    """
+    result = _compose_binol_base()
+    guests = {
+        "Br": bromo,
+        "I": iodo,
+        "C": methane,
+        "tBu": tert_butyl,
+        "phenyl": phenyl,
+    }
+    for atom_id, substituent in (substituents or {}).items():
+        if substituent not in guests:
             raise ValueError(f"Unsupported BINOL substituent: {substituent}")
-        guest_id = len(elements)
-        if substituent in {"Br", "I", "C"}:
-            elements.append(substituent)
-            edges.append((atom_id, guest_id, BondType.SINGLE))
-        elif substituent == "tBu":
-            # Attach the tertiary carbon, then its three methyl groups.
-            elements.extend(["C", "C", "C", "C"])
-            edges.append((atom_id, guest_id, BondType.SINGLE))
-            edges.extend(
-                (guest_id, guest_id + offset, BondType.SINGLE)
-                for offset in (1, 2, 3)
-            )
-        else:
-            # A phenyl substituent with an alternating Kekule ring.
-            elements.extend(["C"] * 6)
-            edges.append((atom_id, guest_id, BondType.SINGLE))
-            edges.extend([
-                (guest_id, guest_id + 1, BondType.DOUBLE),
-                (guest_id + 1, guest_id + 2, BondType.SINGLE),
-                (guest_id + 2, guest_id + 3, BondType.DOUBLE),
-                (guest_id + 3, guest_id + 4, BondType.SINGLE),
-                (guest_id + 4, guest_id + 5, BondType.DOUBLE),
-                (guest_id + 5, guest_id, BondType.SINGLE),
-            ])
-    return _graph_structure(name, elements, edges)
+        result = _replace_with_fragment(
+            result, atom_id, guests[substituent], name=name
+        )
+    result.name = name
+    return result
 
 
 binol = _binol("BINOL")
-binol_3_3_dibromo = _binol("3,3'-dibromo-BINOL", {2: "Br", 12: "Br"})
-binol_3_3_diiodo = _binol("3,3'-diiodo-BINOL", {2: "I", 12: "I"})
-binol_6_6_dibromo = _binol("6,6'-dibromo-BINOL", {8: "Br", 18: "Br"})
-binol_3_3_dimethyl = _binol("3,3'-dimethyl-BINOL", {2: "C", 12: "C"})
-
+binol_3_3_dibromo = _binol("3,3'-dibromo-BINOL", {2: "Br", 13: "Br"})
+binol_3_3_diiodo = _binol("3,3'-diiodo-BINOL", {2: "I", 13: "I"})
+binol_6_6_dibromo = _binol("6,6'-dibromo-BINOL", {8: "Br", 19: "Br"})
+binol_3_3_dimethyl = _binol("3,3'-dimethyl-BINOL", {2: "C", 13: "C"})
 
 
 def _binol_ring_edges() -> list[tuple[int, int, BondType]]:
