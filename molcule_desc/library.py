@@ -7,6 +7,8 @@ from .core import (
     Port,
     PortRef,
     Structure,
+    atom,
+    ported_atom,
     bond,
     double,
     single,
@@ -16,10 +18,10 @@ from .core import (
 # Terminal/dummy structures. XS is a terminal H; XD is a CH2-side fragment;
 # XT is a CH-side fragment. Their unconsumed ports remain available for
 # composition when explicitly exported.
-XS = Structure.ported_atom("H", [single(1)], name="XS")
-XD = Structure.ported_atom("C", [double(1), single(1), single(2)], name="XD")
-XT = Structure.ported_atom("C", [triple(1), single(1)], name="XT")
-XO = Structure.ported_atom("O", [double(1)], name="XO")
+XS = ported_atom(atom("H", 1), [single(1)], name="XS")
+XD = ported_atom(atom("C", 4), [double(1), single(1), single(2)], name="XD")
+XT = ported_atom(atom("C", 4), [triple(1), single(1)], name="XT")
+XO = ported_atom(atom("O", 2), [double(1)], name="XO")
 
 
 def _ethylene() -> Structure:
@@ -36,8 +38,8 @@ def _ethylene() -> Structure:
 
 
 def _methanimine() -> Structure:
-    carbon = Structure.ported_atom("C", [double(1), single(1), single(2)], name="imine C")
-    nitrogen = Structure.ported_atom("N", [double(1), single(1)], name="imine N")
+    carbon = ported_atom(atom("C", 4), [double(1), single(1), single(2)], name="imine C")
+    nitrogen = ported_atom(atom("N", 3), [double(1), single(1)], name="imine N")
     return bond(
         carbon, double(1), nitrogen, double(1),
         expose={
@@ -64,8 +66,8 @@ def _carbonyl() -> Structure:
 
 def _acetone() -> Structure:
     carbonyl = _carbonyl()
-    methyl = Structure.ported_atom(
-        "C", [single(1), single(2), single(3), single(4)], name="methyl C"
+    methyl = ported_atom(
+        atom("C", 4), [single(1), single(2), single(3), single(4)], name="methyl C"
     )
     left_attached = bond(
         carbonyl, single(1), methyl, single(1),
