@@ -1,0 +1,261 @@
+{
+  "format": "molcule_desc-interpreter-tests",
+  "format_version": 1,
+  "status": "draft",
+  "description": "Machine-readable semantic test cases for the proposed interpreter. The surface syntax is provisional; expected results define the behavior being tested.",
+  "syntax_profile": {
+    "definition": "name = expression",
+    "composition": "name = compose(instance: Structure, ...) { connect instance.port with instance.port; export: result_port = instance.port }",
+    "finalize": "finalize(name)",
+    "port_reference": "instance.port",
+    "notes": [
+      "Names before ':' in compose are instance names, not structure names.",
+      "Port names are local to a structure instance and are not interpreted as IUPAC locants.",
+      "The fixtures below are injected test-library structures. They are not a user-facing atom-construction feature."
+    ]
+  },
+  "fixtures": {
+    "Link": {
+      "description": "A test-only two-anchor structure with one exposed single-bond port at each end.",
+      "atoms": [
+        { "id": "L", "element": "C" },
+        { "id": "R", "element": "C" },
+        { "id": "p_left", "element": "H", "role": "port_atom" },
+        { "id": "p_right", "element": "H", "role": "port_atom" }
+      ],
+      "bonds": [
+        { "from": "L", "to": "R", "order": 1 },
+        { "from": "L", "to": "p_left", "order": 1 },
+        { "from": "R", "to": "p_right", "order": 1 }
+      ],
+      "ports": {
+        "left": { "kind": "single", "anchor": "L", "port_atom": "p_left" },
+        "right": { "kind": "single", "anchor": "R", "port_atom": "p_right" }
+      }
+    },
+    "SingleEnd": {
+      "description": "A test-only structure with one single-bond port.",
+      "atoms": [
+        { "id": "C", "element": "C" },
+        { "id": "p", "element": "H", "role": "port_atom" }
+      ],
+      "bonds": [
+        { "from": "C", "to": "p", "order": 1 }
+      ],
+      "ports": {
+        "end": { "kind": "single", "anchor": "C", "port_atom": "p" }
+      }
+    },
+    "DoubleEnd": {
+      "description": "A test-only structure exposing a double-bond port. Its port atom represents one side of ethene when finalized.",
+      "atoms": [
+        { "id": "C", "element": "C" },
+        { "id": "p", "element": "C", "role": "port_atom", "terminal_form": "ethene_half" }
+      ],
+      "bonds": [
+        { "from": "C", "to": "p", "order": 2 }
+      ],
+      "ports": {
+        "end": { "kind": "double", "anchor": "C", "port_atom": "p" }
+      }
+    },
+    "TripleEnd": {
+      "description": "A test-only structure exposing a triple-bond port. Its port atom represents one side of ethyne when finalized.",
+      "atoms": [
+        { "id": "C", "element": "C" },
+        { "id": "p", "element": "C", "role": "port_atom", "terminal_form": "ethyne_half" }
+      ],
+      "bonds": [
+        { "from": "C", "to": "p", "order": 3 }
+      ],
+      "ports": {
+        "end": { "kind": "triple", "anchor": "C", "port_atom": "p" }
+      }
+    }
+  },
+  "tests": [
+    {
+      "id": "compose-single-ports",
+      "category": "composition",
+      "source": "joined = compose(a: Link, b: Link) { connect a.right with b.left; export: left = a.left; right = b.right }",
+      "expect": {
+        "status": "ok",
+        "ports": {
+          "left": { "kind": "single", "source": "a.left" },
+          "right": { "kind": "single", "source": "b.right" }
+        },
+        "consumed_ports": ["a.right", "b.left"],
+        "connections": [
+          { "from_anchor": "a.R", "to_anchor": "b.L", "order": 1 }
+        ],
+        "atom_effects": [
+          { "operation": "remove_port_atom", "target": "a.p_right" },
+          { "operation": "remove_port_atom", "target": "b.p_left" }
+        ]
+      }
+    },
+    {
+      "id": "port-names-are-opaque",
+      "category": "port-resolution",
+      "source": "named = compose(a: Link, b: SingleEnd) { connect a.right with b.end; export: 4 = a.left }",
+      "expect": {
+        "status": "ok",
+        "ports": {
+          "4": { "kind": "single", "source": "a.left" }
+        },
+        "consumed_ports": ["a.right", "b.end"],
+        "assertions": [
+          "The identifier '4' is preserved as a name and has no built-in locant semantics."
+        ]
+      }
+    },
+    {
+      "id": "nested-composition",
+      "category": "composition",
+      "source": "first = compose(a: Link, b: Link) { connect a.right with b.left; export: left = a.left; right = b.right }\nsecond = compose(chain: first, end: SingleEnd) { connect chain.right with end.end; export: left = chain.left }",
+      "expect": {
+        "status": "ok",
+        "ports": {
+          "left": { "kind": "single", "source": "chain.left" }
+        },
+        "consumed_ports": ["chain.right", "end.end"],
+        "assertions": [
+          "A user-defined structure can be used as an input structure just like a library structure."
+        ]
+      }
+    },
+    {
+      "id": "unused-single-port-finalizes-as-hydrogen",
+      "category": "finalization",
+      "source": "m = SingleEnd\nresult = finalize(m)",
+      "expect": {
+        "status": "ok",
+        "unresolved_ports": [],
+        "finalized_ports": [
+          { "port": "m.end", "terminal_form": "hydrogen", "operation": "replace_port_atom_with_terminal_form" }
+        ]
+      }
+    },
+    {
+      "id": "unused-double-port-finalizes-as-ethene-half",
+      "category": "finalization",
+      "source": "m = DoubleEnd\nresult = finalize(m)",
+      "expect": {
+        "status": "ok",
+        "unresolved_ports": [],
+        "finalized_ports": [
+          { "port": "m.end", "terminal_form": "ethene_half", "operation": "replace_port_atom_with_terminal_form" }
+        ]
+      }
+    },
+    {
+      "id": "unused-triple-port-finalizes-as-ethyne-half",
+      "category": "finalization",
+      "source": "m = TripleEnd\nresult = finalize(m)",
+      "expect": {
+        "status": "ok",
+        "unresolved_ports": [],
+        "finalized_ports": [
+          { "port": "m.end", "terminal_form": "ethyne_half", "operation": "replace_port_atom_with_terminal_form" }
+        ]
+      }
+    },
+    {
+      "id": "compatible-double-ports-connect",
+      "category": "port-compatibility",
+      "source": "m = compose(a: DoubleEnd, b: DoubleEnd) { connect a.end with b.end }",
+      "expect": {
+        "status": "ok",
+        "consumed_ports": ["a.end", "b.end"],
+        "connections": [
+          { "from_anchor": "a.C", "to_anchor": "b.C", "order": 2 }
+        ]
+      }
+    },
+    {
+      "id": "compatible-triple-ports-connect",
+      "category": "port-compatibility",
+      "source": "m = compose(a: TripleEnd, b: TripleEnd) { connect a.end with b.end }",
+      "expect": {
+        "status": "ok",
+        "consumed_ports": ["a.end", "b.end"],
+        "connections": [
+          { "from_anchor": "a.C", "to_anchor": "b.C", "order": 3 }
+        ]
+      }
+    },
+    {
+      "id": "incompatible-port-kinds",
+      "category": "errors",
+      "source": "m = compose(a: SingleEnd, b: DoubleEnd) { connect a.end with b.end }",
+      "expect": {
+        "status": "error",
+        "error_code": "E_PORT_KIND_MISMATCH"
+      }
+    },
+    {
+      "id": "unknown-port",
+      "category": "errors",
+      "source": "m = compose(a: Link, b: Link) { connect a.missing with b.left }",
+      "expect": {
+        "status": "error",
+        "error_code": "E_UNKNOWN_PORT"
+      }
+    },
+    {
+      "id": "consume-port-only-once",
+      "category": "errors",
+      "source": "m = compose(a: Link, b: Link, c: Link) { connect a.right with b.left; connect a.right with c.left }",
+      "expect": {
+        "status": "error",
+        "error_code": "E_PORT_ALREADY_CONSUMED"
+      }
+    },
+    {
+      "id": "cannot-export-consumed-port",
+      "category": "errors",
+      "source": "m = compose(a: Link, b: Link) { connect a.right with b.left; export: invalid = a.right }",
+      "expect": {
+        "status": "error",
+        "error_code": "E_EXPORT_CONSUMED_PORT"
+      }
+    },
+    {
+      "id": "duplicate-export-name",
+      "category": "errors",
+      "source": "m = compose(a: Link, b: Link) { export: end = a.left; end = b.right }",
+      "expect": {
+        "status": "error",
+        "error_code": "E_DUPLICATE_EXPORT_NAME"
+      }
+    },
+    {
+      "id": "intramolecular-connection",
+      "category": "composition",
+      "source": "ring = compose(chain: Link) { connect chain.left with chain.right }",
+      "expect": {
+        "status": "ok",
+        "ports": {},
+        "consumed_ports": ["chain.left", "chain.right"],
+        "connections": [
+          { "from_anchor": "chain.L", "to_anchor": "chain.R", "order": 1 }
+        ]
+      }
+    },
+    {
+      "id": "export-renames-port-without-reordering",
+      "category": "port-mapping",
+      "source": "m = compose(a: Link) { export: z = a.right; alpha = a.left }",
+      "expect": {
+        "status": "ok",
+        "ports": {
+          "z": { "kind": "single", "source": "a.right" },
+          "alpha": { "kind": "single", "source": "a.left" }
+        },
+        "assertions": [
+          "Result port names and order are determined by the explicit export declarations, not atom traversal order."
+        ]
+      }
+    }
+  ]
+}
