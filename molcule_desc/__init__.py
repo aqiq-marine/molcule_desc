@@ -15,12 +15,14 @@ from .core import (
     triple,
 )
 from .library import (
-    XS, XD, XT, XO, acetone, carbonyl, ethylene, formaldehyde, methanimine,
+    hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
+    acetone, carbonyl, ethylene, formaldehyde, methanimine,
 )
 
 __all__ = [
     "Atom", "Bond", "BondType", "Port", "PortRef", "Structure",
     "atom", "ported_atom", "bond", "single", "double", "triple",
-    "XS", "XD", "XT", "XO", "ethylene", "methanimine",
+    "hydrogen_single", "carbon_double_two_single", "carbon_triple_single",
+    "oxygen_double", "ethylene", "methanimine",
     "carbonyl", "formaldehyde", "acetone",
 ]
