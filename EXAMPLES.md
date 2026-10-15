@@ -10,8 +10,9 @@ The language treats every structure uniformly. A structure may be a small functi
 - A structure exposes named ports. Port names are local to that structure and need not follow IUPAC numbering.
 - For example, the six replaceable hydrogens of `ethane` are exposed as ports `1` through `6`.
 - `4` and `9` are just port names in the biphenyl example below; the language does not give them special meaning.
-- A port includes a consumable port atom. When left unconnected in a finalized structure, it is evaluated using its terminal form: a single-bond port as hydrogen, a double-bond port as one side of ethene, and a triple-bond port as one side of ethyne.
-- When compatible ports are connected, the corresponding port atoms are consumed according to the connection rule. The resulting structure explicitly declares which ports remain exposed.
+- A port is a named terminal-bond valence on a real atom; it is not a virtual atom.
+- When left unconnected in a finalized structure, a port is completed according to its bond order: a single-bond port with hydrogen, a double-bond port with a terminal =CH2 group, and a triple-bond port with a terminal ≡CH group.
+- When compatible ports are connected, the ports are consumed and a bond is added between their anchor atoms. The resulting structure explicitly declares which ports remain exposed.
 - The examples use concise illustrative notation. Exact syntax, port compatibility, and validation rules remain to be specified.
 
 ## 1. Substitute one hydrogen of ethane
