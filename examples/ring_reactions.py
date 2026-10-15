@@ -12,6 +12,38 @@ from __future__ import annotations
 from molcule_desc.core import Atom, Bond, BondType, Structure, ring, single
 
 
+def _ports_for_remaining_valences(
+    atoms: list[Atom],
+    bonds: list[Bond],
+    preferred_anchors: tuple[int, ...],
+) -> dict:
+    """Create single-bond ports for every unused valence.
+
+    The preferred anchors are ordered first so their first ports can be used
+    for ring closure; all other ports are capped as hydrogens by ring().
+    """
+    used = {atom.id: 0 for atom in atoms}
+    for edge in bonds:
+        used[edge.start] += edge.order.value
+        used[edge.end] += edge.order.value
+
+    ports = {}
+    index = 1
+    for anchor in preferred_anchors:
+        if atoms[anchor].valence - used[anchor] < 1:
+            raise ValueError(f"Atom {anchor} has no valence available for ring closure")
+        ports[single(index)] = anchor
+        index += 1
+        used[anchor] += 1
+
+    for atom_spec in atoms:
+        remaining = atom_spec.valence - used[atom_spec.id]
+        for _ in range(remaining):
+            ports[single(index)] = atom_spec.id
+            index += 1
+    return ports
+
+
 def _lactone(ring_size: int) -> Structure:
     """Build an n-membered saturated lactone by closing a linear precursor."""
     if not 4 <= ring_size <= 8:
@@ -28,14 +60,12 @@ def _lactone(ring_size: int) -> Structure:
     bonds = [
         Bond(0, 1, BondType.DOUBLE),
         Bond(0, 2, BondType.SINGLE),
+        *[
+            Bond(i, i + 1, BondType.SINGLE)
+            for i in range(2, ring_size)
+        ],
     ]
-    bonds.extend(
-        Bond(i, i + 1, BondType.SINGLE)
-        for i in range(2, ring_size)
-    )
-    # The carbonyl carbon (0) connects to the first ring carbon (2); the
-    # chain continues through the methylene units to ring oxygen.
-    ports = {single(1): 0, single(2): ring_size}
+    ports = _ports_for_remaining_valences(atoms, bonds, (0, ring_size))
     precursor = Structure(
         f"{ring_size}-membered lactone precursor", atoms, bonds, ports
     )
@@ -57,7 +87,7 @@ seven_membered_lactone = _lactone(8)
 
 
 def _iodoetherification_product() -> Structure:
-    """Build 2-(iodomethyl)tetrahydrofuran as a 5-exo iodoetherification product.
+    """Build 2-(iodomethyl)tetrahydrofuran as a 5-exo cyclization product.
 
     The ring is O-C-C-C-C. Iodine is attached to the exocyclic methylene
     carbon that corresponds to the terminal alkene carbon in a 4-pentenol
@@ -80,11 +110,12 @@ def _iodoetherification_product() -> Structure:
         Bond(1, 5, BondType.SINGLE),
         Bond(5, 6, BondType.SINGLE),
     ]
+    ports = _ports_for_remaining_valences(atoms, bonds, (0, 4))
     precursor = Structure(
         "iodoetherification precursor",
         atoms,
         bonds,
-        ports={single(1): 0, single(2): 4},
+        ports=ports,
     )
     return ring(
         precursor,
