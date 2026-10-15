@@ -322,3 +322,34 @@ def test_binol_scaffolds_convert_to_valid_smiles():
     ):
         smiles = to_smiles(getattr(md, name))
         assert smiles
+
+
+
+def test_additional_binol_formyl_imine_and_friedel_crafts_derivatives():
+    import molcule_desc as md
+
+    expected = {
+        "binol_2_2_diformyl": "C22H14O2",
+        "binol_bis_2_pyridyl_imine": "C32H22N4",
+        "binol_bis_2_pyrimidyl_imine": "C30H20N6",
+        "binol_6_6_di_tert_butyl": "C28H30O2",
+        "binol_6_6_diphenyl": "C32H22O2",
+    }
+    for name, formula in expected.items():
+        molecule = getattr(md, name).finalize()
+        assert molecule.formula_string() == formula
+        assert molecule.ports == {}
+
+
+def test_additional_binol_derivatives_convert_to_valid_smiles():
+    pytest.importorskip("rdkit")
+    import molcule_desc as md
+
+    for name in (
+        "binol_2_2_diformyl",
+        "binol_bis_2_pyridyl_imine",
+        "binol_bis_2_pyrimidyl_imine",
+        "binol_6_6_di_tert_butyl",
+        "binol_6_6_diphenyl",
+    ):
+        assert to_smiles(getattr(md, name))
