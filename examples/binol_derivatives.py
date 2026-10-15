@@ -5,8 +5,7 @@ atom indices below refer to the current two-naphthol composition.
 """
 from molcule_desc.core import Port, Structure, single, substitute
 from molcule_desc.library import (
-    bromo, carbonyl, imine, iodo, methane, naphthalene, phenyl, pyridine,
-    _graph_structure,
+    bromo, carbonyl, imine, iodo, methane, naphthalene, phenyl, pyridine, pyrimidine,
 )
 from molcule_desc.library_advanced import binol, tert_butyl, _port_at_atom
 
