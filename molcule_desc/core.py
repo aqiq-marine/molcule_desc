@@ -378,13 +378,13 @@ def ring(
     first_port: Port,
     second_port: Port,
     *,
-    expose: Mapping[Port, PortRef],
+    expose: Mapping[Port, Port],
     name: str | None = None,
 ) -> Structure:
     """Close two ports on one structure without duplicating its graph.
 
-    The expose mapping assigns result-local ports to existing ports on the
-    input structure, e.g. {single(1): single(3)}.
+    The expose mapping assigns result-local ports directly to existing ports
+    on the input structure, e.g. {single(1): single(3)}.
     """
     return _connect(
         structure,
