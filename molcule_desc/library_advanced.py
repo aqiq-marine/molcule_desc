@@ -1,7 +1,7 @@
 """Higher-level reusable fragments composed from basic library structures."""
 
 from .core import Structure, single, substitute
-from .library import methane
+from .library import methane, phenyl
 
 
 def _tert_butyl() -> Structure:
@@ -23,3 +23,15 @@ def _tert_butyl() -> Structure:
 
 
 tert_butyl = _tert_butyl()
+
+
+def _biphenyl() -> Structure:
+    """Build biphenyl by connecting two phenyl fragments."""
+    return substitute(
+        phenyl,
+        {single(1): (phenyl, single(1))},
+        name="biphenyl",
+    )
+
+
+biphenyl = _biphenyl()
