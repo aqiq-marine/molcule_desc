@@ -15,18 +15,22 @@ from .core import (
     triple,
 )
 
-# Terminal/dummy structures. XS is a terminal H; XD is a CH2-side fragment;
-# XT is a CH-side fragment. Their unconsumed ports remain available for
-# composition when explicitly exported.
-XS = ported_atom(atom("H", 1), [single(1)], name="XS")
-XD = ported_atom(atom("C", 4), [double(1), single(1), single(2)], name="XD")
-XT = ported_atom(atom("C", 4), [triple(1), single(1)], name="XT")
-XO = ported_atom(atom("O", 2), [double(1)], name="XO")
+# These are atom-topology templates, not virtual atoms. Their names describe
+# the bond ports available on each real atom.
+hydrogen_single = ported_atom(atom("H", 1), [single(1)], name="hydrogen_single")
+carbon_double_two_single = ported_atom(
+    atom("C", 4), [double(1), single(1), single(2)],
+    name="carbon_double_two_single",
+)
+carbon_triple_single = ported_atom(
+    atom("C", 4), [triple(1), single(1)], name="carbon_triple_single"
+)
+oxygen_double = ported_atom(atom("O", 2), [double(1)], name="oxygen_double")
 
 
 def _ethylene() -> Structure:
     return bond(
-        XD, double(1), XD, double(1),
+        carbon_double_two_single, double(1), carbon_double_two_single, double(1),
         expose={
             single(1): PortRef(0, single(1)),
             single(2): PortRef(0, single(2)),
@@ -52,10 +56,10 @@ def _methanimine() -> Structure:
 
 
 def _carbonyl() -> Structure:
-    # XD's double port is consumed to form C=O; its two single ports are
+    # carbon_double_two_single's double port is consumed to form C=O; its two single ports are
     # still exposed so the carbonyl carbon can be connected to substituents.
     return bond(
-        XD, double(1), XO, double(1),
+        carbon_double_two_single, double(1), oxygen_double, double(1),
         expose={
             single(1): PortRef(0, single(1)),
             single(2): PortRef(0, single(2)),
