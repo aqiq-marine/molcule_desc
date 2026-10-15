@@ -15,7 +15,7 @@
 #     internal path, e.g. s.1: 0.s.2.
 #   - In an internal path, 0 denotes the host; a path such as s.1.s.1
 #     traverses through the guest attached at host port s.1.
-#   - ring(structure, position_a, position_b) is a proposed syntax for
+#   - ring structure port_a port_b is a proposed syntax for
 #     connecting two ports within one structure.
 #
 # Names such as ethane, benzene, OH, and fragment are unresolved identifiers
@@ -143,10 +143,10 @@ numbered = host.f {
 }
 
 # 15. Ring closure: connect two ports within one structure
-cyclohexane = ring(hexane, 1, 6)
+cyclohexane = ring hexane s.1 s.6
 
 # 16. Ring closure may be nested inside a definition
-cyclic_fragment = ring(open_chain, 1, 2)
+cyclic_fragment = ring open_chain s.1 s.2
 decorated_ring = benzene.f {
     s.1: cyclic_fragment.port.s.1
 } {
@@ -161,7 +161,7 @@ open_chain = ethane.f {
     s.1: 0.s.2,
     s.2: s.1.s.2
 }
-closed_chain = ring(open_chain, 1, 6)
+closed_chain = ring open_chain s.1 s.6
 
 # 18. Example matching the proposed port-connection and publication syntax
 port_export_example = host.f {
