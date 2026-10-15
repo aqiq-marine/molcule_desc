@@ -21,6 +21,8 @@ from .library_advanced import (
     biphenyl,
     tert_butyl,
     binol,
+    tetralol,
+    h8_binol,
 )
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
@@ -49,7 +51,7 @@ __all__ = [
     "thiophene", "imidazole", "naphthalene", "fluoro", "chloro", "bromo",
     "iodo", "thiol", "thioether", "sulfone", "phosphine",
     "phosphine_oxide", "phosphate_ester", "methylene", "ethylene_linker",
-    "ethanol", "biphenyl", "binol",
+    "ethanol", "biphenyl", "binol", "tetralol", "h8_binol",
     "diphenyl_ether", "naphthol", "indole", "benzofuran",
     "benzothiophene", "quinoline", "isoquinoline", "anthracene",
 ]
