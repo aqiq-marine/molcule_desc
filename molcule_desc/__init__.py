@@ -10,6 +10,7 @@ from .core import (
     atom,
     ported_atom,
     bond,
+    ring,
     double,
     single,
     triple,
