@@ -353,3 +353,28 @@ def bond(
         bonds,
         output_ports,
     )
+
+
+
+def ring(
+    structure: Structure,
+    first_port: Port,
+    second_port: Port,
+    *,
+    expose: Mapping[Port, PortRef],
+    name: str | None = None,
+) -> Structure:
+    """Close a ring by connecting two exposed ports on the same structure.
+
+    This is a convenience wrapper around bond(..., intramolecular=True);
+    the connection and output-port export semantics are otherwise identical.
+    """
+    return bond(
+        structure,
+        first_port,
+        structure,
+        second_port,
+        expose=expose,
+        name=name or f"ring({structure.name})",
+        intramolecular=True,
+    )
