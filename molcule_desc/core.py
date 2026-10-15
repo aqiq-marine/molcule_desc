@@ -235,15 +235,32 @@ def bond(
     *,
     expose: Mapping[Port, PortRef],
     name: str | None = None,
-    intramolecular: bool = False,
 ) -> Structure:
-    """Connect two compatible ports and explicitly publish remaining ports.
+    """Connect compatible ports on two structures.
+
+    Each input structure is copied into the result. Use ring() to connect
+    two ports within one existing structure without duplicating its graph.
+    """
+    return _connect(
+        left, left_port, right, right_port,
+        expose=expose, name=name, intramolecular=False,
+    )
+
+
+def _connect(
+    left: Structure,
+    left_port: Port,
+    right: Structure,
+    right_port: Port,
+    *,
+    expose: Mapping[Port, PortRef],
+    name: str | None = None,
+    intramolecular: bool,
+) -> Structure:
+    """Shared implementation for intermolecular composition and ring closure.
 
     expose maps each output-local Port to the input port it represents.
-    PortRef.source is 0 for left and 1 for right. Each input is copied as a
-    separate occurrence by default, even when both arguments are the same
-    reusable template. Set intramolecular=True to connect two ports within
-    one existing structure without duplicating its graph.
+    PortRef.source is 0 for left and 1 for right.
     """
     if intramolecular and left is not right:
         raise ValueError("Intramolecular bonding requires the same Structure object")
@@ -364,17 +381,18 @@ def ring(
     expose: Mapping[Port, PortRef],
     name: str | None = None,
 ) -> Structure:
-    """Close a ring by connecting two exposed ports on the same structure.
+    """Close two ports on one structure without duplicating its graph.
 
-    This is a convenience wrapper around bond(..., intramolecular=True);
-    the connection and output-port export semantics are otherwise identical.
+    The expose mapping assigns result-local ports to existing ports on the
+    input structure, e.g. {single(1): single(3)}.
     """
-    return bond(
+    return _connect(
         structure,
         first_port,
         structure,
         second_port,
-        expose=expose,
+        expose={output_port: PortRef(0, source_port)
+                for output_port, source_port in expose.items()},
         name=name or f"ring({structure.name})",
         intramolecular=True,
     )
