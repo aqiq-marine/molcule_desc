@@ -81,10 +81,11 @@ class Structure:
         ports: Mapping[Port, int] | None = None,
     ) -> None:
         self.name = name
-        self.atoms = {atom.id: atom for atom in atoms}
+        atom_list = list(atoms)
+        self.atoms = {atom.id: atom for atom in atom_list}
         if len(self.atoms) == 0:
             raise ValueError("A structure must contain at least one atom")
-        if len(self.atoms) != len(list(self.atoms.values())):
+        if len(self.atoms) != len(atom_list):
             raise ValueError("Atom IDs must be unique")
 
         self.bonds = list(bonds)
@@ -276,20 +277,58 @@ def bond(
     input_ports = [left.ports, right.ports]
     consumed = [{left_port}, {right_port}]
     output_ports: dict[Port, int] = {}
+    published_sources: set[tuple[int, Port]] = set()
 
     for output_port, ref in expose.items():
-        if output_port in output_ports:
-            raise ValueError(f"Duplicate output port {output_port}")
-        source_ports = input_ports[ref.source]
+        source_index = 0 if same_structure else ref.source
+        source_ports = input_ports[source_index]
         if ref.port not in source_ports:
             raise ValueError(f"Input has no exposed port {ref.port}")
-        if ref.port in consumed[ref.source]:
+        if ref.port in consumed[source_index]:
             raise ValueError(f"Cannot expose consumed port {ref.port}")
         if output_port.bond is not ref.port.bond:
             raise ValueError("Output port bond type does not match source port")
-        source = left if ref.source == 0 else right
+        source_key = (source_index, ref.port)
+        if source_key in published_sources:
+            raise ValueError(f"Input port {ref.port} is published more than once")
+        published_sources.add(source_key)
         source_atom = source_ports[ref.port]
-        output_ports[output_port] = maps[ref.source][source_atom]
+        output_ports[output_port] = maps[source_index][source_atom]
+
+    # Any unconsumed input port not explicitly exported is finalized locally.
+    # This preserves the rule that only exported ports remain available.
+    next_id = max(atoms, default=-1) + 1
+
+    def cap_unexported(port: Port, anchor: int) -> None:
+        nonlocal next_id
+        if port.bond is BondType.SINGLE:
+            if atoms[anchor].element == "H":
+                return
+            terminal_id = next_id
+            next_id += 1
+            atoms[terminal_id] = Atom(terminal_id, "H")
+            bonds.append(Bond(anchor, terminal_id, BondType.SINGLE))
+            return
+
+        terminal_id = next_id
+        next_id += 1
+        atoms[terminal_id] = Atom(terminal_id, "C")
+        bonds.append(Bond(anchor, terminal_id, port.bond))
+        hydrogen_count = 2 if port.bond is BondType.DOUBLE else 1
+        for _ in range(hydrogen_count):
+            hydrogen_id = next_id
+            next_id += 1
+            atoms[hydrogen_id] = Atom(hydrogen_id, "H")
+            bonds.append(Bond(terminal_id, hydrogen_id, BondType.SINGLE))
+
+    source_count = 1 if same_structure else 2
+    for source_index in range(source_count):
+        for port, atom_id in input_ports[source_index].items():
+            if port in consumed[source_index]:
+                continue
+            if (source_index, port) in published_sources:
+                continue
+            cap_unexported(port, maps[source_index][atom_id])
 
     return Structure(
         name or f"bond({left.name}, {right.name})",
