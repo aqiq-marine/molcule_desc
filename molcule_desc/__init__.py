@@ -27,7 +27,7 @@ from .library_advanced import (
 from .library import (
     hydrogen_single, carbon_double_two_single, carbon_triple_single, oxygen_double,
     acetone, benzene, carbonyl, ethylene, formaldehyde, methanimine,
-    methane, ethane, propane, acetylene, cyclopropane, cyclobutane,
+    methane, ethane, propane, butane, acetylene, cyclopropane, cyclobutane,
     cyclopentane, cyclohexane, cycloheptane, cyclooctane, cyclononane, cyclodecane, phenyl,
     hydroxyl, ether, carboxyl, ester, amino, amine, amide, nitrile, imine,
     pyridine, pyrimidine, pyrrole, thiophene, imidazole, naphthalene,
@@ -44,7 +44,7 @@ __all__ = [
     "hydrogen_single", "carbon_double_two_single", "carbon_triple_single",
     "oxygen_double", "ethylene", "methanimine",
     "carbonyl", "formaldehyde", "acetone", "benzene", "tert_butyl",
-    "methane", "ethane", "propane", "acetylene", "cyclopropane", "cyclobutane",
+    "methane", "ethane", "propane", "butane", "acetylene", "cyclopropane", "cyclobutane",
     "cyclopentane", "cyclohexane", "cycloheptane", "cyclooctane", "cyclononane", "cyclodecane",
     "phenyl", "hydroxyl", "ether", "carboxyl", "ester",
     "amino", "amine", "amide", "nitrile", "imine", "pyridine", "pyrimidine", "pyrrole",
