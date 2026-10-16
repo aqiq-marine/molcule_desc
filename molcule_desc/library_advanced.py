@@ -1,7 +1,7 @@
 """Higher-level reusable fragments composed from basic library structures."""
 
 from .core import Port, PortRef, Structure, bond, ring, single, substitute
-from .library import benzene, hydroxyl, methane, naphthol, phenyl, propane
+from .library import benzene, butane, hydroxyl, methane, naphthol, phenyl
 
 
 def _tert_butyl() -> Structure:
@@ -69,24 +69,9 @@ def _phenol() -> Structure:
 phenol = _phenol()
 
 
-def _butane_chain() -> Structure:
-    """Build a four-carbon chain from propane and methane with both ends open."""
-    return bond(
-        propane,
-        single(1),
-        methane,
-        single(1),
-        expose={
-            single(1): PortRef(0, single(6)),
-            single(2): PortRef(1, single(2)),
-        },
-        name="butane chain",
-    )
-
-
 def _tetralol() -> Structure:
     """Build tetralol by attaching a butane chain to phenol and closing the ring."""
-    chain = _butane_chain()
+    chain = butane
     attached = bond(
         phenol,
         single(4),
@@ -95,6 +80,7 @@ def _tetralol() -> Structure:
         expose={
             single(1): PortRef(0, single(5)),
             single(2): PortRef(1, single(2)),
+            single(3): PortRef(0, single(2)),
         },
         name="phenol with butane chain",
     )
@@ -102,7 +88,7 @@ def _tetralol() -> Structure:
         attached,
         single(1),
         single(2),
-        expose={},
+        expose={single(1): single(3)},
         name="tetralol",
     )
 
