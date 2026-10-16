@@ -236,6 +236,24 @@ butane = bond(
     },
     name="butane",
 )
+
+def _linear_alkane(carbon_count: int) -> Structure:
+    """Build a straight-chain alkane with every C-H valence exposed as a port."""
+    if not 1 <= carbon_count <= 10:
+        raise ValueError("carbon_count must be between 1 and 10")
+    return _graph_structure(
+        f"alkane_{carbon_count}",
+        ["C"] * carbon_count,
+        [(i, i + 1, BondType.SINGLE) for i in range(carbon_count - 1)],
+    )
+
+
+pentane = _linear_alkane(5)
+hexane = _linear_alkane(6)
+heptane = _linear_alkane(7)
+octane = _linear_alkane(8)
+nonane = _linear_alkane(9)
+decane = _linear_alkane(10)
 acetylene = _graph_structure(
     "acetylene", ["C", "C"], [(0, 1, BondType.TRIPLE)]
 )
