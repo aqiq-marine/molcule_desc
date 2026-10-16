@@ -18,6 +18,22 @@ def _tert_butyl() -> Structure:
     )
 
 
+
+
+def _isopropyl() -> Structure:
+    """Build isopropyl with only its central-carbon attachment port exposed."""
+    return substitute(
+        methane,
+        {
+            single(1): (methane, single(1)),
+            single(2): (methane, single(1)),
+        },
+        expose={single(1): (0, single(4))},
+        name="isopropyl",
+    )
+
+
+isopropyl = _isopropyl()
 tert_butyl = _tert_butyl()
 
 
