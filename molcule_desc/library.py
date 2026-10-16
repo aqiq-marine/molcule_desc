@@ -223,6 +223,19 @@ propane = _graph_structure(
     "propane", ["C", "C", "C"],
     [(0, 1, BondType.SINGLE), (1, 2, BondType.SINGLE)],
 )
+
+# A four-carbon chain with one exposed port at each terminal carbon.
+butane = bond(
+    propane,
+    single(1),
+    methane,
+    single(1),
+    expose={
+        single(1): PortRef(0, single(6)),
+        single(2): PortRef(1, single(2)),
+    },
+    name="butane",
+)
 acetylene = _graph_structure(
     "acetylene", ["C", "C"], [(0, 1, BondType.TRIPLE)]
 )
