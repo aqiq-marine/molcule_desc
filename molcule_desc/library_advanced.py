@@ -1,7 +1,7 @@
 """Higher-level reusable fragments composed from basic library structures."""
 
-from .core import BondType, Port, Structure, single, substitute
-from .library import _graph_structure, methane, naphthol, phenyl
+from .core import Port, PortRef, Structure, bond, ring, single, substitute
+from .library import benzene, hydroxyl, methane, naphthol, phenyl, propane
 
 
 def _tert_butyl() -> Structure:
@@ -46,28 +46,65 @@ def _compose_binol_base() -> Structure:
 binol = _compose_binol_base()
 
 
-def _tetralol() -> Structure:
-    """Build a 2-tetralol fragment with the phenolic ring remaining aromatic.
+def _phenol() -> Structure:
+    """Build phenol from the reusable benzene and hydroxyl fragments.
 
-    Atom numbering follows the naphthol fragment: the hydroxyl-bearing
-    aromatic ring is atoms 0-5; atoms 4-5 is the shared fused bond. The
-    phenolic ring keeps its aromatic Kekule pattern. The opposite ring is
-    hydrogenated by changing its non-fused bonds to single bonds.
+    Ports 4 and 5 are kept on adjacent ring atoms so a four-carbon chain can
+    be attached across them and closed into the second ring.
     """
-    return _graph_structure(
-        "tetralol",
-        ["C"] * 10 + ["O"],
-        [
-            (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-            (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-            (4, 5, BondType.SINGLE), (5, 0, BondType.DOUBLE),
-            (5, 6, BondType.SINGLE), (6, 7, BondType.SINGLE),
-            (7, 8, BondType.SINGLE), (8, 9, BondType.SINGLE),
-            (9, 4, BondType.SINGLE), (2, 10, BondType.SINGLE),
-        ],
-        valences=[4] * 10 + [2],
+    return substitute(
+        benzene,
+        {single(3): (hydroxyl, single(1))},
+        expose={
+            single(1): (0, single(1)),
+            single(2): (0, single(2)),
+            single(3): (0, single(4)),
+            single(4): (0, single(5)),
+            single(5): (0, single(6)),
+        },
+        name="phenol",
     )
 
+
+phenol = _phenol()
+
+
+def _butane_chain() -> Structure:
+    """Build a four-carbon chain from propane and methane with both ends open."""
+    return bond(
+        propane,
+        single(1),
+        methane,
+        single(1),
+        expose={
+            single(1): PortRef(0, single(6)),
+            single(2): PortRef(1, single(2)),
+        },
+        name="butane chain",
+    )
+
+
+def _tetralol() -> Structure:
+    """Build tetralol by attaching a butane chain to phenol and closing the ring."""
+    chain = _butane_chain()
+    attached = bond(
+        phenol,
+        single(4),
+        chain,
+        single(1),
+        expose={
+            single(1): PortRef(0, single(5)),
+            single(2): PortRef(1, single(2)),
+        },
+        name="phenol with butane chain",
+    )
+    return ring(
+        attached,
+        single(1),
+        single(2),
+        expose={},
+        name="tetralol",
+    )
 
 tetralol = _tetralol()
 
