@@ -555,7 +555,9 @@ def _fuse_path(
 
 
 # Fused-ring compounds are composed from reusable cyclic and open-path fragments.
-naphthalene = _fuse_path("naphthalene", benzene, butadiene_path)
+naphthalene = _fuse_path(
+    "naphthalene", benzene, butadiene_path, base_atoms=(4, 5)
+)
 
 naphthol = substitute(
     naphthalene,
