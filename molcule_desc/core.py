@@ -373,6 +373,71 @@ def _connect(
 
 
 
+
+def fuse(
+    cyclic: Structure,
+    chain: Structure,
+    *,
+    cyclic_ports: tuple[Port, Port],
+    chain_ports: tuple[Port, Port],
+    name: str | None = None,
+) -> Structure:
+    """Fuse a chain to a cyclic structure by consuming two port pairs.
+
+    The first port in each tuple is connected first; the second pair closes
+    the new ring. Every other exposed port from both input structures remains
+    exposed on the returned Structure, so the fused structure stays editable.
+    Port labels in the result are reassigned uniquely by bond type.
+    """
+    if len(set(cyclic_ports)) != 2:
+        raise ValueError("cyclic_ports must contain two distinct ports")
+    if len(set(chain_ports)) != 2:
+        raise ValueError("chain_ports must contain two distinct ports")
+    for port in cyclic_ports:
+        if port not in cyclic.ports:
+            raise ValueError(f"{cyclic.name} has no exposed port {port}")
+    for port in chain_ports:
+        if port not in chain.ports:
+            raise ValueError(f"{chain.name} has no exposed port {port}")
+
+    # bond() consumes the first pair. Export every other port, including the
+    # second pair needed for ring closure, while assigning unique output labels.
+    expose: dict[Port, PortRef] = {}
+    source_to_output: dict[tuple[int, Port], Port] = {}
+    next_index: dict[BondType, int] = {}
+    for source, structure, consumed in (
+        (0, cyclic, cyclic_ports[0]),
+        (1, chain, chain_ports[0]),
+    ):
+        for port in structure.ports:
+            if port == consumed:
+                continue
+            index = next_index.get(port.bond, 1)
+            next_index[port.bond] = index + 1
+            output_port = Port(port.bond, index)
+            expose[output_port] = PortRef(source, port)
+            source_to_output[(source, port)] = output_port
+
+    attached = bond(
+        cyclic,
+        cyclic_ports[0],
+        chain,
+        chain_ports[0],
+        expose=expose,
+        name=f"{name or 'fused'} (open)",
+    )
+    closure_first = source_to_output[(0, cyclic_ports[1])]
+    closure_second = source_to_output[(1, chain_ports[1])]
+    return ring(
+        attached,
+        closure_first,
+        closure_second,
+        expose={port: port for port in attached.ports if port not in {
+            closure_first, closure_second
+        }},
+        name=name or f"fuse({cyclic.name}, {chain.name})",
+    )
+
 def substitute(
     host: Structure,
     substitutions: Mapping[Port, tuple[Structure, Port]],
