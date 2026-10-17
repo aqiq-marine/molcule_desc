@@ -254,6 +254,27 @@ heptane = _linear_alkane(7)
 octane = _linear_alkane(8)
 nonane = _linear_alkane(9)
 decane = _linear_alkane(10)
+
+
+def _chain_preset(name: str, carbon_count: int) -> Structure:
+    """Create a saturated carbon chain with every remaining valence exposed."""
+    return _graph_structure(
+        name,
+        ["C"] * carbon_count,
+        [(i, i + 1, BondType.SINGLE) for i in range(carbon_count - 1)],
+    )
+
+
+# Flexible chain fragments intended for ring fusion. All available valences,
+# including those on internal carbons, remain exposed for later substitution.
+trimethylene = _chain_preset("trimethylene", 3)
+tetramethylene = _chain_preset("tetramethylene", 4)
+pentamethylene = _chain_preset("pentamethylene", 5)
+hexamethylene = _chain_preset("hexamethylene", 6)
+heptamethylene = _chain_preset("heptamethylene", 7)
+octamethylene = _chain_preset("octamethylene", 8)
+nonamethylene = _chain_preset("nonamethylene", 9)
+decamethylene = _chain_preset("decamethylene", 10)
 acetylene = _graph_structure(
     "acetylene", ["C", "C"], [(0, 1, BondType.TRIPLE)]
 )
