@@ -467,90 +467,112 @@ def _biaryl(name: str, *, ether_link: bool) -> Structure:
 diphenyl_ether = _biaryl("diphenyl_ether", ether_link=True)
 
 
-# Fused-ring aromatic compounds represented as Kekule graphs.
-naphthol = _graph_structure(
-    "naphthol", ["C"] * 10 + ["O"],
-    [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
-        (9, 4, BondType.SINGLE), (2, 10, BondType.SINGLE),
-    ],
-    valences=[4] * 10 + [2],
+# Open paths used as the non-shared part of fused rings. These are regular
+# editable Structures: all residual valences are exposed as ports.
+def _path_fragment(
+    name: str,
+    elements: list[str],
+    edge_orders: list[BondType],
+    *,
+    valences: list[int] | None = None,
+) -> Structure:
+    if len(edge_orders) != len(elements) - 1:
+        raise ValueError("A path needs exactly len(elements) - 1 edge orders")
+    edges = [
+        (index, index + 1, order)
+        for index, order in enumerate(edge_orders)
+    ]
+    return _graph_structure(name, elements, edges, valences=valences)
+
+
+butadiene_path = _path_fragment(
+    "butadiene_path",
+    ["C", "C", "C", "C"],
+    [BondType.DOUBLE, BondType.SINGLE, BondType.DOUBLE],
+)
+pyrrole_path = _path_fragment(
+    "pyrrole_path",
+    ["C", "C", "N"],
+    [BondType.DOUBLE, BondType.SINGLE],
+    valences=[4, 4, 3],
+)
+furan_path = _path_fragment(
+    "furan_path",
+    ["C", "C", "O"],
+    [BondType.DOUBLE, BondType.SINGLE],
+    valences=[4, 4, 2],
+)
+thiophene_path = _path_fragment(
+    "thiophene_path",
+    ["C", "C", "S"],
+    [BondType.DOUBLE, BondType.SINGLE],
+    valences=[4, 4, 2],
+)
+pyridine_path = _path_fragment(
+    "pyridine_path",
+    ["C", "N", "C", "C"],
+    [BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
+    valences=[4, 3, 4, 4],
+)
+isoquinoline_path = _path_fragment(
+    "isoquinoline_path",
+    ["C", "C", "N", "C"],
+    [BondType.DOUBLE, BondType.SINGLE, BondType.SINGLE],
+    valences=[4, 4, 3, 4],
 )
 
-indole = _graph_structure(
-    "indole", ["C"] * 8 + ["N"],
-    [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (4, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 5, BondType.SINGLE),
-    ],
-    valences=[4] * 8 + [3],
+
+def _port_at_atom(structure: Structure, atom_id: int) -> Port:
+    """Find a single-bond attachment port anchored to an atom."""
+    for port, anchor in structure.ports.items():
+        if anchor == atom_id and port.bond is BondType.SINGLE:
+            return port
+    raise ValueError(f"{structure.name} has no single-bond port on atom {atom_id}")
+
+
+def _fuse_path(
+    name: str,
+    base: Structure,
+    path: Structure,
+    *,
+    base_atoms: tuple[int, int] = (0, 1),
+) -> Structure:
+    """Fuse an open path across two exposed positions of a cyclic base."""
+    from .core import fuse
+
+    base_ports = tuple(_port_at_atom(base, atom_id) for atom_id in base_atoms)
+    path_ports = (
+        _port_at_atom(path, 0),
+        _port_at_atom(path, len(path.atoms) - 1),
+    )
+    return fuse(
+        base,
+        path,
+        cyclic_ports=base_ports,
+        chain_ports=path_ports,
+        name=name,
+    )
+
+
+# Fused-ring compounds are composed from reusable cyclic and open-path fragments.
+naphthalene = _fuse_path("naphthalene", benzene, butadiene_path)
+
+naphthol = substitute(
+    naphthalene,
+    {_port_at_atom(naphthalene, 2): (hydroxyl, single(1))},
+    name="naphthol",
 )
 
-benzofuran = _graph_structure(
-    "benzofuran", ["C"] * 8 + ["O"],
-    [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (4, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 5, BondType.SINGLE),
-    ],
-    valences=[4] * 8 + [2],
-)
+indole = _fuse_path("indole", benzene, pyrrole_path)
+benzofuran = _fuse_path("benzofuran", benzene, furan_path)
+benzothiophene = _fuse_path("benzothiophene", benzene, thiophene_path)
+quinoline = _fuse_path("quinoline", benzene, pyridine_path)
+isoquinoline = _fuse_path("isoquinoline", benzene, isoquinoline_path)
 
-benzothiophene = _graph_structure(
-    "benzothiophene", ["C"] * 8 + ["S"],
-    [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (4, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 5, BondType.SINGLE),
-    ],
-    valences=[4] * 8 + [2],
-)
-
-quinoline = _graph_structure(
-    "quinoline", ["N"] + ["C"] * 9,
-    [
-        (0, 1, BondType.SINGLE), (1, 2, BondType.DOUBLE),
-        (2, 3, BondType.SINGLE), (3, 4, BondType.DOUBLE),
-        (4, 5, BondType.SINGLE), (5, 0, BondType.DOUBLE),
-        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
-        (9, 4, BondType.SINGLE),
-    ],
-)
-
-isoquinoline = _graph_structure(
-    "isoquinoline", ["N"] + ["C"] * 9,
-    [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
-        (9, 4, BondType.SINGLE),
-    ],
-)
-
-anthracene = _graph_structure(
-    "anthracene", ["C"] * 14,
-    [
-        (0, 1, BondType.DOUBLE), (1, 2, BondType.SINGLE),
-        (2, 3, BondType.DOUBLE), (3, 4, BondType.SINGLE),
-        (4, 5, BondType.DOUBLE), (5, 0, BondType.SINGLE),
-        (5, 6, BondType.SINGLE), (6, 7, BondType.DOUBLE),
-        (7, 8, BondType.SINGLE), (8, 9, BondType.DOUBLE),
-        (9, 4, BondType.SINGLE), (8, 10, BondType.SINGLE),
-        (10, 11, BondType.DOUBLE), (11, 12, BondType.SINGLE),
-        (12, 13, BondType.DOUBLE), (13, 9, BondType.SINGLE),
-    ],
+# Add a third ring to an outer edge of naphthalene to build anthracene.
+anthracene = _fuse_path(
+    "anthracene",
+    naphthalene,
+    butadiene_path,
+    base_atoms=(2, 3),
 )
