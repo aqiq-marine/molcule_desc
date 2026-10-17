@@ -517,7 +517,7 @@ pyridine_path = _path_fragment(
 isoquinoline_path = _path_fragment(
     "isoquinoline_path",
     ["C", "C", "N", "C"],
-    [BondType.DOUBLE, BondType.SINGLE, BondType.SINGLE],
+    [BondType.SINGLE, BondType.DOUBLE, BondType.SINGLE],
     valences=[4, 4, 3, 4],
 )
 
